@@ -1,0 +1,2636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Timer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        .card-transition {
+            transition: all 0.3s ease;
+        }
+        
+        .card-transition:hover {
+            transform: translateY(-2px);
+        }
+        
+        .timer-display {
+            font-family: monospace;
+            font-size: 3.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-ring {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .floating-card {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .chapter-accordion {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .chapter-accordion.open {
+            max-height: 500px;
+        }
+        
+        .gradient-button {
+            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+        }
+        
+        .gradient-button:hover {
+            background: linear-gradient(135deg, #4338ca, #2563eb);
+        }
+
+        .custom-input {
+            background: #F1F5F9;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-input:focus {
+            background: white;
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #E2E8F0;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        .progress-value {
+            height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #8B5CF6);
+            transition: width 0.5s ease;
+        }
+        
+        .chapter-number {
+            min-width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #EEF2FF;
+            color: #4F46E5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .topic-number {
+            min-width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #F3F4F6;
+            color: #6366F1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #4F46E5, #2563EB);
+        }
+        
+        .stats-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Alarm feature styles */
+        .alarm-badge {
+            position: relative;
+        }
+        
+        .alarm-badge.active::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #EF4444;
+            border-radius: 50%;
+            top: 0;
+            right: 0;
+        }
+        
+        .alarm-ring {
+            animation: ring 2s ease infinite;
+        }
+        
+        @keyframes ring {
+            0%, 100% { transform: rotate(0); }
+            5%, 15%, 25% { transform: rotate(5deg); }
+            10%, 20%, 30% { transform: rotate(-5deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="sticky top-0 z-50 gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="ri-focus-3-line text-3xl"></i>
+                <span class="text-2xl font-bold">FocusUP</span>
+            </div>
+            <nav class="flex items-center space-x-4">
+                <a href="subjects.html" class="flex items-center space-x-2 bg-white bg-opacity-20 px-4 py-2 rounded-full hover:bg-opacity-30 transition">
+                    <i class="ri-home-4-line"></i>
+                    <span>Back to Subjects</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-indigo-900 mb-2" id="subjectTitle">Loading...</h1>
+            <p class="text-gray-600" id="subjectDescription"></p>
+        </div>
+        
+        <!-- Statistics Section -->
+        <div class="max-w-4xl mx-auto mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="stats-card bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <div class="text-indigo-500 mb-2">
+                    <i class="ri-time-line text-3xl"></i>
+                </div>
+                <h3 class="text-gray-700 font-medium">Total Study Time</h3>
+                <p class="text-2xl font-bold text-indigo-800" id="totalStudyTime">00:00:00</p>
+            </div>
+            <div class="stats-card bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <div class="text-indigo-500 mb-2">
+                    <i class="ri-fire-line text-3xl"></i>
+                </div>
+                <h3 class="text-gray-700 font-medium">Current Streak</h3>
+                <p class="text-2xl font-bold text-indigo-800" id="currentStreak">0 days</p>
+            </div>
+            <div class="stats-card bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <div class="text-indigo-500 mb-2">
+                    <i class="ri-checkbox-circle-line text-3xl"></i>
+                </div>
+                <h3 class="text-gray-700 font-medium">Completion Rate</h3>
+                <p class="text-2xl font-bold text-indigo-800" id="completionRate">0%</p>
+            </div>
+        </div>
+
+        <!-- Chapter Management Section -->
+        <div class="max-w-3xl mx-auto mb-8 bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-800">Chapters</h2>
+                <div class="flex space-x-3">
+                    <button onclick="openAlarmsModal()" class="text-indigo-600 px-3 py-1 rounded border border-indigo-600 hover:bg-indigo-50 transition flex items-center space-x-1">
+                        <i class="ri-alarm-line"></i>
+                        <span>Alarms History</span>
+                    </button>
+                    <button onclick="openAlarmsModals()" class="text-indigo-600 px-3 py-1 rounded border border-indigo-600 hover:bg-indigo-50 transition flex items-center space-x-1">
+                        <i class="ri-alarm-line"></i>
+                        <span>Alarm</span>
+                    </button>
+                    <button onclick="openAddChapterModal()" class="gradient-button text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i class="ri-add-line"></i>
+                        <span>Add Chapter</span>
+                    </button>
+                    <!-- Add this inside your existing chapter management section, perhaps near the buttons -->
+                    <div id="alarmsContainer" class="mt-4 space-y-2">
+                        <!-- Dynamically populated alarms will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="audioSettingsPanel" class="audio-control-panel mb-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-gray-800 mb-3">Sound Customization</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="alarmSound">
+                                    Alarm Sound
+                                </label>
+                                <select id="alarmSound" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3">Digital Beep</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-classic-alarm-995.mp3">Classic Alarm</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-alarm-tone-996.mp3">Alarm Tone</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-alert-quick-chime-766.mp3">Quick Chime</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-digital-clock-digital-alarm-buzzer-992.mp3">Buzzer</option>
+                                </select>
+                                <div class="flex items-center mt-2">
+                                    <button id="testAlarmBtn" class="text-xs text-indigo-600 hover:text-indigo-800 mr-2">
+                                        <i class="ri-play-circle-line mr-1"></i>Test
+                                    </button>
+                                    <input type="range" id="alarmVolume" min="0" max="100" value="80" class="volume-slider flex-grow">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="breakSound">
+                                    Break Sound
+                                </label>
+                                <select id="breakSoundSelect" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3">Positive Notification</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3">Bell Notification</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3">Achievement Bell</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-fairy-bell-tinkle-702.mp3">Fairy Bell</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3">Game Notification</option>
+                                </select>
+                                <div class="flex items-center mt-2">
+                                    <button id="testBreakBtn" class="text-xs text-indigo-600 hover:text-indigo-800 mr-2">
+                                        <i class="ri-play-circle-line mr-1"></i>Test
+                                    </button>
+                                    <input type="range" id="breakVolume" min="0" max="100" value="80" class="volume-slider flex-grow">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="studySound">
+                                    Study Sound
+                                </label>
+                                <select id="studySoundSelect" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3">Interface Start</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-tile-game-reveal-960.mp3">Game Reveal</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3">Positive Beep</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-app-success-tone-2104.mp3">Success Tone</option>
+                                    <option value="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3">Unlock Notification</option>
+                                </select>
+                                <div class="flex items-center mt-2">
+                                    <button id="testStudyBtn" class="text-xs text-indigo-600 hover:text-indigo-800 mr-2">
+                                        <i class="ri-play-circle-line mr-1"></i>Test
+                                    </button>
+                                    <input type="range" id="studyVolume" min="0" max="100" value="80" class="volume-slider flex-grow">
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col space-y-3 mt-4">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="soundEnabled" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <label for="soundEnabled" class="ml-2 block text-sm text-gray-700">
+                                        Enable Sound Alerts
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="loopAlarmSound" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <label for="loopAlarmSound" class="ml-2 block text-sm text-gray-700">
+                                        Loop Alarm Until Stopped
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="backgroundNotifications" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <label for="backgroundNotifications" class="ml-2 block text-sm text-gray-700">
+                                        Enable Desktop Notifications
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="studyDuration">
+                                    Study Duration (minutes)
+                                </label>
+                                <input type="number" id="studyDuration" min="1" max="120" value="25"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="breakDuration">
+                                    Break Duration (minutes)
+                                </label>
+                                <input type="number" id="breakDuration" min="1" max="30" value="5"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="reminderInterval">
+                                    Reminder Interval (minutes)
+                                </label>
+                                <input type="number" id="reminderInterval" min="0" max="60" value="0"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <p class="text-xs text-gray-500 mt-1">(0 = no reminders)</p>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="alarmDuration">
+                                    Alarm Duration (seconds)
+                                </label>
+                                <input type="number" id="alarmDuration" min="1" max="60" value="10"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <p class="text-xs text-gray-500 mt-1">(How long alarms play if not looped)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>  
+        
+
+            <div class="mb-4 w-full">
+                <div class="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Overall Progress</span>
+                    <span id="overallProgressText">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-value" id="overallProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div id="chaptersList" class="space-y-4">
+                <!-- Chapters will be dynamically added here -->
+            </div>
+        </div>
+        
+        <!-- Timer Section -->
+        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <div class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium" id="currentChapterTag">
+                    Not studying
+                </div>
+            </div>
+            <div class="timer-display mb-8" id="timer">00:00:00</div>
+            <div class="flex justify-center space-x-4">
+                <button id="startBtn" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition flex items-center space-x-2">
+                    <i class="ri-play-line"></i>
+                    <span>Start</span>
+                </button>
+                <button id="pauseBtn" class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition flex items-center space-x-2" disabled>
+                    <i class="ri-pause-line"></i>
+                    <span>Pause</span>
+                </button>
+                <button id="stopBtn" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition flex items-center space-x-2" disabled>
+                    <i class="ri-stop-line"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Chapter Modal -->
+    <div id="addChapterModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4 text-indigo-800">Add New Chapter</h3>
+            <form id="addChapterForm" onsubmit="addNewChapter(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="chapterName">
+                        Chapter Name
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="chapterName" 
+                           type="text" 
+                           required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="chapterDescription">
+                        Description (optional)
+                    </label>
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                              id="chapterDescription" 
+                              rows="3"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="estimatedTime">
+                        Estimated Study Time (minutes)
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="estimatedTime" 
+                           type="number"
+                           min="0"
+                           placeholder="60"
+                           value="60">
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" 
+                            onclick="closeAddChapterModal()" 
+                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="gradient-button text-white px-4 py-2 rounded hover:opacity-90 transition">
+                        Add Chapter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Topic Modal -->
+    <div id="addTopicModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4 text-indigo-800">Add New Topic</h3>
+            <form id="addTopicForm" onsubmit="addNewTopic(event)">
+                <input type="hidden" id="parentChapterIndex">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="topicName">
+                        Topic Name
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="topicName" 
+                           type="text" 
+                           required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="topicDescription">
+                        Description (optional)
+                    </label>
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                              id="topicDescription" 
+                              rows="2"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="topicEstimatedTime">
+                        Estimated Study Time (minutes)
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="topicEstimatedTime" 
+                           type="number"
+                           min="0"
+                           placeholder="30"
+                           value="30">
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" 
+                            onclick="closeAddTopicModal()" 
+                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="gradient-button text-white px-4 py-2 rounded hover:opacity-90 transition">
+                        Add Topic
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Chapter/Topic Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4 text-indigo-800" id="editModalTitle">Edit</h3>
+            <form id="editForm" onsubmit="saveEdit(event)">
+                <input type="hidden" id="editChapterIndex">
+                <input type="hidden" id="editTopicIndex">
+                <input type="hidden" id="editType">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="editName">
+                        Name
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="editName" 
+                           type="text" 
+                           required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="editDescription">
+                        Description
+                    </label>
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                              id="editDescription" 
+                              rows="2"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="editEstimatedTime">
+                        Estimated Study Time (minutes)
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="editEstimatedTime" 
+                           type="number"
+                           min="0">
+                </div>
+                <div class="flex justify-between">
+                    <button type="button" 
+                            onclick="confirmDelete()" 
+                            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+                        Delete
+                    </button>
+                    <div class="flex space-x-4">
+                        <button type="button" 
+                                onclick="closeEditModal()" 
+                                class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="gradient-button text-white px-4 py-2 rounded hover:opacity-90 transition">
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Set Alarm Modal -->
+    <div id="setAlarmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4 text-indigo-800">Set Study Reminder</h3>
+            <form id="setAlarmForm" onsubmit="setChapterAlarm(event)">
+                <input type="hidden" id="alarmChapterIndex">
+                <input type="hidden" id="alarmTopicIndex">
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="alarmDate">
+                        Date
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="alarmDate" 
+                           type="date"
+                           required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="alarmTime">
+                        Time
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="alarmTime" 
+                           type="time"
+                           required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="alarmDescription">
+                        Reminder Note (optional)
+                    </label>
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                              id="alarmDescription" 
+                              rows="2"
+                              placeholder="e.g. Review this chapter before quiz"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" 
+                            onclick="closeSetAlarmModal()" 
+                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="gradient-button text-white px-4 py-2 rounded hover:opacity-90 transition">
+                        Set Reminder
+                    </button>
+                    
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Alarms Modal -->
+    <div id="alarmsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-indigo-800">Study Reminders</h3>
+                <button onclick="closeAlarmsModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line text-xl"></i>
+                </button>
+            </div>
+            <div id="alarmsList" class="max-h-80 overflow-y-auto">
+                <!-- Alarms will be listed here -->
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="closeAlarmsModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+     <!-- Audio elements -->
+     <audio id="alertSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-quick-chime-766.mp3"></audio>
+     <audio id="breakSound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3"></audio>
+     <audio id="studySound" src="https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3"></audio>
+
+    <script>
+        // Get subject from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const subject = urlParams.get('subject');
+        const chaptersList = document.getElementById('chaptersList');
+        const currentChapterTag = document.getElementById('currentChapterTag');
+        
+        // Update title
+        document.getElementById('subjectTitle').textContent = subject || 'Study Timer';
+        
+        // Timer functionality
+        let timer;
+        let isRunning = false;
+        let seconds = 0;
+        let currentChapter = null;
+        let currentTopic = null;
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        // Daily progress data
+        let dailyProgressData = {
+            totalTime: 0,
+            lastSession: null,
+            sessions: {},
+            streakData: {
+                currentStreak: 0,
+                bestStreak: 0,
+                lastStudyDate: null
+            }
+        };
+
+        // Initialize chapters in localStorage if not exists
+        if (!localStorage.getItem(`${subject}_chapters`)) {
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify([]));
+        }
+
+        // Initialize alarms in localStorage if not exists
+        if (!localStorage.getItem(`${subject}_alarms`)) {
+            localStorage.setItem(`${subject}_alarms`, JSON.stringify([]));
+        }
+
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function loadDailyProgress() {
+            const progressKey = `studyProgress_${subject}`;
+            const savedProgress = localStorage.getItem(progressKey);
+            if (savedProgress) {
+                dailyProgressData = JSON.parse(savedProgress);
+            }
+            
+            // Update UI elements
+            document.getElementById('totalStudyTime').textContent = formatTime(dailyProgressData.totalTime);
+            document.getElementById('currentStreak').textContent = `${dailyProgressData.streakData.currentStreak} days`;
+            
+            // Calculate completion rate
+            calculateCompletionRate();
+        }
+
+        function saveDailyProgress() {
+            const progressKey = `studyProgress_${subject}`;
+            localStorage.setItem(progressKey, JSON.stringify(dailyProgressData));
+        }
+
+        function updateDailyProgress(duration) {
+            const today = new Date().toLocaleDateString();
+            
+            // Update total time
+            dailyProgressData.totalTime += duration;
+            dailyProgressData.lastSession = new Date().toISOString();
+            
+            // Update daily sessions
+            if (!dailyProgressData.sessions[today]) {
+                dailyProgressData.sessions[today] = 0;
+            }
+            dailyProgressData.sessions[today] += duration;
+            
+            // Update streak
+            const lastDate = dailyProgressData.streakData.lastStudyDate ? 
+                new Date(dailyProgressData.streakData.lastStudyDate) : null;
+            
+            if (!lastDate) {
+                dailyProgressData.streakData.currentStreak = 1;
+            } else {
+                const diffTime = Math.abs(new Date() - lastDate);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays <= 1) {
+                    dailyProgressData.streakData.currentStreak++;
+                } else {
+                    dailyProgressData.streakData.currentStreak = 1;
+                }
+            }
+            
+            if (dailyProgressData.streakData.currentStreak > dailyProgressData.streakData.bestStreak) {
+                dailyProgressData.streakData.bestStreak = dailyProgressData.streakData.currentStreak;
+            }
+            
+            dailyProgressData.streakData.lastStudyDate = new Date().toISOString();
+            
+            // Update UI elements
+            document.getElementById('totalStudyTime').textContent = formatTime(dailyProgressData.totalTime);
+            document.getElementById('currentStreak').textContent = `${dailyProgressData.streakData.currentStreak} days`;
+            
+            saveDailyProgress();
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timer = setInterval(() => {
+                    seconds++;
+                    timerDisplay.textContent = formatTime(seconds);
+                }, 1000);
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                stopBtn.disabled = false;
+            }
+        }
+
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timer);
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+            }
+        }
+
+        function stopTimer() {
+            if (currentChapter !== null) {
+                saveStudyTime();
+            }
+            
+            isRunning = false;
+            clearInterval(timer);
+            seconds = 0;
+            timerDisplay.textContent = formatTime(seconds);
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stopBtn.disabled = true;
+            
+            // Reset current study session
+            currentChapter = null;
+            currentTopic = null;
+            updateCurrentChapterTag();
+        }
+
+        function saveStudyTime() {
+            if (currentChapter === null) return;
+            
+            // Load the latest data from both storage systems
+            loadDailyProgress();
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            // Update daily progress
+            updateDailyProgress(seconds);
+            
+            // Update chapter/topic time
+            if (currentTopic === null) {
+                // Add time to chapter
+                if (!chapters[currentChapter].timeSpent) {
+                    chapters[currentChapter].timeSpent = 0;
+                }
+                chapters[currentChapter].timeSpent += seconds;
+            } else {
+                // Add time to topic
+                if (!chapters[currentChapter].topics[currentTopic].timeSpent) {
+                    chapters[currentChapter].topics[currentTopic].timeSpent = 0;
+                }
+                chapters[currentChapter].topics[currentTopic].timeSpent += seconds;
+            }
+            
+            // Save updated chapters data
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            
+            // Refresh displays
+            refreshChaptersList();
+            calculateCompletionRate();
+        }
+
+        function openAddChapterModal() {
+            document.getElementById('addChapterModal').classList.remove('hidden');
+        }
+
+        function closeAddChapterModal() {
+            document.getElementById('addChapterModal').classList.add('hidden');
+            document.getElementById('addChapterForm').reset();
+        }
+
+        function openAddTopicModal(chapterIndex) {
+            document.getElementById('parentChapterIndex').value = chapterIndex;
+            document.getElementById('addTopicModal').classList.remove('hidden');
+        }
+
+        function closeAddTopicModal() {
+            document.getElementById('addTopicModal').classList.add('hidden');
+            document.getElementById('addTopicForm').reset();
+        }
+        
+        function openEditModal(type, chapterIndex, topicIndex) {
+            document.getElementById('editType').value = type;
+            document.getElementById('editChapterIndex').value = chapterIndex;
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            if (type === 'chapter') {
+                document.getElementById('editModalTitle').textContent = 'Edit Chapter';
+                document.getElementById('editName').value = chapters[chapterIndex].name;
+                document.getElementById('editDescription').value = chapters[chapterIndex].description || '';
+                document.getElementById('editEstimatedTime').value = chapters[chapterIndex].estimatedTime || 60;
+            } else {
+                document.getElementById('editTopicIndex').value = topicIndex;
+                document.getElementById('editModalTitle').textContent = 'Edit Topic';
+                document.getElementById('editName').value = chapters[chapterIndex].topics[topicIndex].name;
+                document.getElementById('editDescription').value = chapters[chapterIndex].topics[topicIndex].description || '';
+                document.getElementById('editEstimatedTime').value = chapters[chapterIndex].topics[topicIndex].estimatedTime || 30;
+            }
+            
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editForm').reset();
+        }
+        
+        function openSetAlarmModal(chapterIndex, topicIndex = null) {
+            document.getElementById('alarmChapterIndex').value = chapterIndex;
+            if (topicIndex !== null) {
+                document.getElementById('alarmTopicIndex').value = topicIndex;
+            } else {
+                document.getElementById('alarmTopicIndex').value = '';
+            }
+            
+            // Set default values (today's date and current time)
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            document.getElementById('alarmDate').value = dateStr;
+            document.getElementById('alarmTime').value = timeStr;
+            
+            document.getElementById('setAlarmModal').classList.remove('hidden');
+        }
+        
+        function closeSetAlarmModal() {
+            document.getElementById('setAlarmModal').classList.add('hidden');
+            document.getElementById('setAlarmForm').reset();
+        }
+        
+        function openAlarmsModal() {
+            refreshAlarmsList(); // Update the list of alarms
+            document.getElementById('alarmsModal').classList.remove('hidden');
+        }
+        
+        
+        function closeAlarmsModal() {
+            document.getElementById('alarmsModal').classList.add('hidden');
+        }
+        
+        function addNewChapter(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('chapterName').value;
+            const description = document.getElementById('chapterDescription').value;
+            const estimatedTime = parseInt(document.getElementById('estimatedTime').value) || 60;
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            chapters.push({
+                name: name,
+                description: description,
+                estimatedTime: estimatedTime,
+                timeSpent: 0,
+                completed: false,
+                topics: []
+            });
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            
+            closeAddChapterModal();
+            refreshChaptersList();
+            calculateCompletionRate();
+        }
+        
+        function addNewTopic(event) {
+            event.preventDefault();
+            
+            const chapterIndex = document.getElementById('parentChapterIndex').value;
+            const name = document.getElementById('topicName').value;
+            const description = document.getElementById('topicDescription').value;
+            const estimatedTime = parseInt(document.getElementById('topicEstimatedTime').value) || 30;
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            chapters[chapterIndex].topics.push({
+                name: name,
+                description: description,
+                estimatedTime: estimatedTime,
+                timeSpent: 0,
+                completed: false
+            });
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            
+            closeAddTopicModal();
+            refreshChaptersList();
+            calculateCompletionRate();
+        }
+        
+        function saveEdit(event) {
+            event.preventDefault();
+            
+            const type = document.getElementById('editType').value;
+            const chapterIndex = document.getElementById('editChapterIndex').value;
+            const name = document.getElementById('editName').value;
+            const description = document.getElementById('editDescription').value;
+            const estimatedTime = parseInt(document.getElementById('editEstimatedTime').value) || 0;
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            if (type === 'chapter') {
+                chapters[chapterIndex].name = name;
+                chapters[chapterIndex].description = description;
+                chapters[chapterIndex].estimatedTime = estimatedTime;
+            } else {
+                const topicIndex = document.getElementById('editTopicIndex').value;
+                chapters[chapterIndex].topics[topicIndex].name = name;
+                chapters[chapterIndex].topics[topicIndex].description = description;
+                chapters[chapterIndex].topics[topicIndex].estimatedTime = estimatedTime;
+            }
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            
+            closeEditModal();
+            refreshChaptersList();
+            calculateCompletionRate();
+        }
+        
+        function confirmDelete() {
+            const type = document.getElementById('editType').value;
+            const chapterIndex = document.getElementById('editChapterIndex').value;
+            
+            let message;
+            if (type === 'chapter') {
+                message = "Are you sure you want to delete this chapter and all its topics?";
+            } else {
+                message = "Are you sure you want to delete this topic?";
+            }
+            
+            if (confirm(message)) {
+                deleteItem(type, chapterIndex);
+            }
+        }
+        
+            function deleteItem(type, chapterIndex) {
+                const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+                
+                if (type === 'chapter') {
+                    chapters.splice(chapterIndex, 1);
+                } else {
+                    const topicIndex = document.getElementById('editTopicIndex').value;
+                    chapters[chapterIndex].topics.splice(topicIndex, 1);
+                }
+                
+                localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+                
+                closeEditModal();
+                refreshChaptersList();
+                calculateCompletionRate();
+            }
+        
+        function toggleChapterCompletion(chapterIndex) {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            chapters[chapterIndex].completed = !chapters[chapterIndex].completed;
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            
+            refreshChaptersList();
+            calculateCompletionRate();
+        }
+        
+        function toggleTopicCompletion(chapterIndex, topicIndex) {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            chapters[chapterIndex].topics[topicIndex].completed = !chapters[chapterIndex].topics[topicIndex].completed;
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            
+            refreshChaptersList();
+            calculateCompletionRate();
+        }
+        
+        function calculateCompletionRate() {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            let totalItems = 0;
+            let completedItems = 0;
+            
+            chapters.forEach(chapter => {
+                totalItems++;
+                if (chapter.completed) completedItems++;
+                
+                chapter.topics.forEach(topic => {
+                    totalItems++;
+                    if (topic.completed) completedItems++;
+                });
+            });
+            
+            const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+            document.getElementById('completionRate').textContent = `${completionRate}%`;
+            document.getElementById('overallProgressText').textContent = `${completionRate}%`;
+            document.getElementById('overallProgressBar').style.width = `${completionRate}%`;
+        }
+        
+        function startStudySession(chapterIndex, topicIndex = null) {
+            // Save current session if timer is running
+            if (isRunning) {
+                saveStudyTime();
+            }
+            
+            // Reset and start new session
+            currentChapter = chapterIndex;
+            currentTopic = topicIndex;
+            
+            stopTimer();
+            updateCurrentChapterTag();
+            startTimer();
+        }
+        
+        function updateCurrentChapterTag() {
+            if (currentChapter === null) {
+                currentChapterTag.textContent = "Not studying";
+                return;
+            }
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            if (currentTopic === null) {
+                currentChapterTag.textContent = `Studying: ${chapters[currentChapter].name}`;
+            } else {
+                currentChapterTag.textContent = `Studying: ${chapters[currentChapter].name} - ${chapters[currentChapter].topics[currentTopic].name}`;
+            }
+        }
+        
+        function toggleChapterAccordion(chapterIndex) {
+            const accordionElement = document.getElementById(`chapter-topics-${chapterIndex}`);
+            accordionElement.classList.toggle('open');
+            
+            const icon = document.getElementById(`chapter-toggle-${chapterIndex}`);
+            if (accordionElement.classList.contains('open')) {
+                icon.classList.remove('ri-arrow-right-s-line');
+                icon.classList.add('ri-arrow-down-s-line');
+            } else {
+                icon.classList.remove('ri-arrow-down-s-line');
+                icon.classList.add('ri-arrow-right-s-line');
+            }
+        }
+        
+        function refreshChaptersList() {
+            chaptersList.innerHTML = '';
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            if (chapters.length === 0) {
+                chaptersList.innerHTML = `
+                    <div class="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
+                        <div class="text-gray-500 mb-2"><i class="ri-book-open-line text-3xl"></i></div>
+                        <p class="text-gray-600">No chapters added yet. Click "Add Chapter" to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            chapters.forEach((chapter, chapterIndex) => {
+                // Calculate chapter progress
+                const chapterEstimatedTime = chapter.estimatedTime || 60;
+                const chapterSpentTime = chapter.timeSpent || 0;
+                const chapterProgress = Math.min(Math.round((chapterSpentTime / (chapterEstimatedTime * 60)) * 100), 100);
+                
+                // Check if chapter has an alarm
+                const alarms = JSON.parse(localStorage.getItem(`${subject}_alarms`));
+                const hasAlarm = alarms.some(alarm => 
+                    alarm.chapterIndex === chapterIndex && alarm.topicIndex === null);
+                
+                const chapterElement = document.createElement('div');
+                chapterElement.className = 'bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden';
+                chapterElement.innerHTML = `
+                    <div class="p-4">
+                        <div class="flex items-center">
+                            <div class="chapter-number mr-3">${chapterIndex + 1}</div>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center space-x-2">
+                                        <h3 class="font-bold text-gray-800">${chapter.name}</h3>
+                                        ${hasAlarm ? '<span class="alarm-badge active text-indigo-500"><i class="ri-alarm-line"></i></span>' : ''}
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <button onclick="startStudySession(${chapterIndex})" class="text-green-600 hover:text-green-700 p-1" title="Start studying">
+                                            <i class="ri-play-circle-line text-xl"></i>
+                                        </button>
+                                        <button onclick="openSetAlarmModal(${chapterIndex})" class="text-indigo-600 hover:text-indigo-700 p-1" title="Set reminder">
+                                            <i class="ri-alarm-line text-xl"></i>
+                                        </button>
+                                        <button onclick="openEditModal('chapter', ${chapterIndex})" class="text-gray-500 hover:text-gray-700 p-1" title="Edit">
+                                            <i class="ri-edit-line text-xl"></i>
+                                        </button>
+                                        <button onclick="toggleChapterAccordion(${chapterIndex})" class="text-gray-500 hover:text-gray-700 p-1" title="Expand/collapse">
+                                            <i id="chapter-toggle-${chapterIndex}" class="ri-arrow-right-s-line text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">${chapter.description || 'No description'}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                <div class="flex items-center">
+                                    <i class="ri-time-line mr-1"></i>
+                                    <span>${formatTime(chapter.timeSpent || 0)} / ${chapter.estimatedTime || 60} min</span>
+                                </div>
+                                <span>${chapterProgress}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-value" style="width: ${chapterProgress}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 flex items-center justify-between">
+                            <button onclick="openAddTopicModal(${chapterIndex})" class="text-indigo-600 px-3 py-1 rounded border border-indigo-600 hover:bg-indigo-50 transition text-sm flex items-center space-x-1">
+                                <i class="ri-add-line"></i>
+                                <span>Add Topic</span>
+                            </button>
+                            <div>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" class="w-0 h-0 absolute" ${chapter.completed ? 'checked' : ''} onchange="toggleChapterCompletion(${chapterIndex})">
+                                    <div class="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center ${chapter.completed ? 'bg-green-500 border-green-500' : 'bg-white'}">
+                                        ${chapter.completed ? '<i class="ri-check-line text-white text-xs"></i>' : ''}
+                                    </div>
+                                    <span class="ml-2 text-sm ${chapter.completed ? 'text-green-600' : 'text-gray-600'}">
+                                        ${chapter.completed ? 'Completed' : 'Mark as completed'}
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="chapter-topics-${chapterIndex}" class="chapter-accordion bg-gray-50 border-t border-gray-100">
+                        ${renderTopics(chapter.topics, chapterIndex)}
+                    </div>
+                `;
+                
+                chaptersList.appendChild(chapterElement);
+            });
+        }
+        
+        function renderTopics(topics, chapterIndex) {
+            if (topics.length === 0) {
+                return `
+                    <div class="p-4 text-center">
+                        <p class="text-sm text-gray-500">No topics added yet</p>
+                    </div>
+                `;
+            }
+            
+            let topicsHtml = '';
+            topics.forEach((topic, topicIndex) => {
+                // Calculate topic progress
+                const topicEstimatedTime = topic.estimatedTime || 30;
+                const topicSpentTime = topic.timeSpent || 0;
+                const topicProgress = Math.min(Math.round((topicSpentTime / (topicEstimatedTime * 60)) * 100), 100);
+                
+                // Check if topic has an alarm
+                const alarms = JSON.parse(localStorage.getItem(`${subject}_alarms`));
+                const hasAlarm = alarms.some(alarm => 
+                    alarm.chapterIndex === chapterIndex && alarm.topicIndex === topicIndex);
+                
+                topicsHtml += `
+                    <div class="p-3 border-b border-gray-100 last:border-b-0">
+                        <div class="flex items-start">
+                            <div class="topic-number mr-3">${topicIndex + 1}</div>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center space-x-2">
+                                        <h4 class="font-medium text-gray-700">${topic.name}</h4>
+                                        ${hasAlarm ? '<span class="alarm-badge active text-indigo-500"><i class="ri-alarm-line"></i></span>' : ''}
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <button onclick="startStudySession(${chapterIndex}, ${topicIndex})" class="text-green-600 hover:text-green-700 p-1" title="Start studying">
+                                            <i class="ri-play-circle-line text-lg"></i>
+                                        </button>
+                                        <button onclick="openSetAlarmModal(${chapterIndex}, ${topicIndex})" class="text-indigo-600 hover:text-indigo-700 p-1" title="Set reminder">
+                                            <i class="ri-alarm-line text-lg"></i>
+                                        </button>
+                                        <button onclick="openEditModal('topic', ${chapterIndex}, ${topicIndex})" class="text-gray-500 hover:text-gray-700 p-1" title="Edit">
+                                            <i class="ri-edit-line text-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-600 mt-1">${topic.description || 'No description'}</p>
+                                
+                                <div class="mt-2">
+                                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                        <div class="flex items-center">
+                                            <i class="ri-time-line mr-1"></i>
+                                            <span>${formatTime(topic.timeSpent || 0)} / ${topic.estimatedTime || 30} min</span>
+                                        </div>
+                                        <span>${topicProgress}%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-value" style="width: ${topicProgress}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-2 flex justify-end">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" class="w-0 h-0 absolute" ${topic.completed ? 'checked' : ''} onchange="toggleTopicCompletion(${chapterIndex}, ${topicIndex})">
+                                        <div class="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center ${topic.completed ? 'bg-green-500 border-green-500' : 'bg-white'}">
+                                            ${topic.completed ? '<i class="ri-check-line text-white text-xs"></i>' : ''}
+                                        </div>
+                                        <span class="ml-2 text-xs ${topic.completed ? 'text-green-600' : 'text-gray-600'}">
+                                            ${topic.completed ? 'Completed' : 'Mark as completed'}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            return topicsHtml;
+        }
+        
+        function setChapterAlarm(event) {
+            event.preventDefault();
+            
+            const chapterIndex = parseInt(document.getElementById('alarmChapterIndex').value);
+            const topicIndexInput = document.getElementById('alarmTopicIndex').value;
+            const topicIndex = topicIndexInput === '' ? null : parseInt(topicIndexInput);
+            const date = document.getElementById('alarmDate').value;
+            const time = document.getElementById('alarmTime').value;
+            const description = document.getElementById('alarmDescription').value;
+            
+            const alarmTimestamp = new Date(`${date}T${time}`).getTime();
+            
+            const alarms = JSON.parse(localStorage.getItem(`${subject}_alarms`));
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            const newAlarm = {
+                id: Date.now(),
+                chapterIndex: chapterIndex,
+                topicIndex: topicIndex,
+                timestamp: alarmTimestamp,
+                description: description,
+                chapterName: chapters[chapterIndex].name,
+                topicName: topicIndex !== null ? chapters[chapterIndex].topics[topicIndex].name : null
+            };
+            
+            alarms.push(newAlarm);
+            localStorage.setItem(`${subject}_alarms`, JSON.stringify(alarms));
+            
+            closeSetAlarmModal();
+            refreshChaptersList();
+            
+            alert('Reminder set successfully!');
+        }
+        
+        function deleteAlarm(alarmId) {
+            if (confirm('Are you sure you want to delete this reminder?')) {
+                const alarms = JSON.parse(localStorage.getItem(`${subject}_alarms`));
+                const updatedAlarms = alarms.filter(alarm => alarm.id !== alarmId);
+                localStorage.setItem(`${subject}_alarms`, JSON.stringify(updatedAlarms));
+                
+                refreshAlarmsList();
+                refreshChaptersList();
+            }
+        }
+        
+        function refreshAlarmsList() {
+            const alarmsList = document.getElementById('alarmsList');
+            alarmsList.innerHTML = '';
+            
+            const alarms = JSON.parse(localStorage.getItem(`${subject}_alarms`));
+            
+            if (alarms.length === 0) {
+                alarmsList.innerHTML = `
+                    <div class="text-center p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                        <div class="text-gray-500 mb-2"><i class="ri-alarm-line text-3xl"></i></div>
+                        <p class="text-gray-600">No reminders set yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort alarms by timestamp (nearest first)
+            alarms.sort((a, b) => a.timestamp - b.timestamp);
+            
+            alarms.forEach(alarm => {
+                const alarmDate = new Date(alarm.timestamp);
+                const now = new Date();
+                const isPast = alarmDate < now;
+                
+                const alarmElement = document.createElement('div');
+                alarmElement.className = `mb-3 p-3 rounded-lg ${isPast ? 'bg-gray-100' : 'bg-indigo-50'} relative`;
+                
+                alarmElement.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center ${isPast ? '' : 'alarm-ring'}">
+                            <i class="ri-alarm-line text-xl ${isPast ? 'text-gray-500' : 'text-indigo-600'} mr-2"></i>
+                            <div>
+                                <div class="font-medium ${isPast ? 'text-gray-500' : 'text-indigo-700'}">
+                                    ${alarm.topicName ? `${alarm.chapterName} - ${alarm.topicName}` : alarm.chapterName}
+                                </div>
+                                <div class="text-sm ${isPast ? 'text-gray-500' : 'text-indigo-600'}">
+                                    ${alarmDate.toLocaleDateString()} at ${alarmDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    ${isPast ? ' (Past)' : ''}
+                                </div>
+                                ${alarm.description ? `<p class="text-sm ${isPast ? 'text-gray-500' : 'text-indigo-600'} mt-1">${alarm.description}</p>` : ''}
+                            </div>
+                        </div>
+                        <button onclick="deleteAlarm(${alarm.id})" class="text-gray-500 hover:text-red-500">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </div>
+                `;
+                
+                alarmsList.appendChild(alarmElement);
+            });
+        }
+        
+        function reorderChapters() {
+            alert('This feature will be available in a future update!');
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        
+        // Check for active alarms
+        function checkAlarms() {
+            const alarms = JSON.parse(localStorage.getItem(`${subject}_alarms`));
+            const now = new Date().getTime();
+            const alarmSound = document.getElementById('alarmSound'); // Get the audio element
+        
+            alarms.forEach(alarm => {
+                if (alarm.timestamp <= now && alarm.timestamp > now - 60000) { // Within the last minute
+                    const alarmText = alarm.topicName 
+                        ? `Time to study ${alarm.chapterName} - ${alarm.topicName}!` 
+                        : `Time to study ${alarm.chapterName}!`;
+        
+                    // Play the alarm sound
+                    if (alarmSound) {
+                        alarmSound.play().catch(error => {
+                            console.error("Failed to play alarm sound:", error);
+                        });
+                    }
+        
+                    // Show notification
+                    if (Notification.permission === "granted") {
+                        new Notification("Study Reminder", {
+                            body: alarmText,
+                            icon: "/favicon.ico"
+                        });
+                    } else if (Notification.permission !== "denied") {
+                        Notification.requestPermission().then(permission => {
+                            if (permission === "granted") {
+                                new Notification("Study Reminder", {
+                                    body: alarmText,
+                                    icon: "/favicon.ico"
+                                });
+                            }
+                        });
+                    }
+        
+                    // Fall back to alert if notifications aren't available
+                    alert(alarmText);
+                }
+            });
+        }
+        
+        // Initialize the application
+        window.onload = function() {
+            // Your existing code
+            
+            // Load global settings
+            loadGlobalSettings();
+            
+            // Setup settings event listeners
+            setupSettingsEventListeners();
+            
+            // Setup audio test buttons
+            setupAudioTestButtons();
+            
+            // Setup timer controls
+            document.getElementById('startBtn').addEventListener('click', function() {
+                // Start timer for the selected chapter/topic
+                // You need to implement logic to get the selected item
+                const selectedItem = getSelectedStudyItem();
+                if (selectedItem) {
+                    startTimer(selectedItem.chapterId, selectedItem.topicId);
+                } else {
+                    alert("Please select a chapter or topic to study.");
+                }
+            });
+            
+            document.getElementById('pauseBtn').addEventListener('click', function() {
+                // Implement pause functionality
+            });
+            
+            document.getElementById('stopBtn').addEventListener('click', stopTimer);
+            
+            // Setup alarm checker
+            setupAlarmChecker();
+        };
+
+        // Alarm Management System
+
+        // Audio for alarm
+        const alarmSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alert-quick-chime-766.mp3'); // Replace with your preferred alarm sound
+        
+
+        // Alarm data structure
+        class Alarm {
+            constructor(id, chapterId, time, title, isActive = true) {
+                this.id = id;
+                this.chapterId = chapterId;
+                this.time = time;
+                this.title = title;
+                this.isActive = isActive;
+            }
+        }
+
+        class AlarmManager {
+            constructor() {
+                this.alarms = [];
+                this.activeAlarmInterval = null;
+            }
+
+            // Add a new alarm
+            addAlarm(chapterId, time, title) {
+                const id = Date.now().toString();
+                const newAlarm = new Alarm(id, chapterId, time, title);
+                this.alarms.push(newAlarm);
+                this.saveAlarms();
+                this.renderAlarms();
+                this.setupAlarmCheck();
+                return newAlarm;
+            }
+
+            // Remove an alarm
+            removeAlarm(alarmId) {
+                this.alarms = this.alarms.filter(alarm => alarm.id !== alarmId);
+                this.saveAlarms();
+                this.renderAlarms();
+            }
+
+            // Toggle alarm active/inactive status
+            toggleAlarmStatus(alarmId) {
+                const alarm = this.alarms.find(a => a.id === alarmId);
+                if (alarm) {
+                    alarm.isActive = !alarm.isActive;
+                    this.saveAlarms();
+                    this.renderAlarms();
+                }
+            }
+
+            // Save alarms to local storage
+            saveAlarms() {
+                localStorage.setItem('chapterAlarms', JSON.stringify(this.alarms));
+            }
+
+            // Load alarms from local storage
+            loadAlarms() {
+                const savedAlarms = localStorage.getItem('chapterAlarms');
+                this.alarms = savedAlarms ? JSON.parse(savedAlarms) : [];
+                this.renderAlarms();
+                this.setupAlarmCheck();
+            }
+
+            // Render alarms to the UI
+            renderAlarms() {
+                const alarmsContainer = document.getElementById('alarmsContainer');
+                if (!alarmsContainer) return;
+
+                alarmsContainer.innerHTML = this.alarms.map(alarm => `
+                    <div class="alarm-item flex justify-between items-center p-2 bg-gray-100 rounded">
+                        <div>
+                            <span class="font-medium">${alarm.title}</span>
+                            <span class="text-sm text-gray-600 ml-2">${alarm.time}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input 
+                                type="checkbox" 
+                                ${alarm.isActive ? 'checked' : ''} 
+                                onchange="alarmManager.toggleAlarmStatus('${alarm.id}')"
+                                class="form-checkbox"
+                            >
+                            <button 
+                                onclick="alarmManager.removeAlarm('${alarm.id}')" 
+                                class="text-red-500 hover:bg-red-100 p-1 rounded"
+                            >
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Setup alarm checking mechanism
+            setupAlarmCheck() {
+                // Clear any existing interval
+                if (this.activeAlarmInterval) {
+                    clearInterval(this.activeAlarmInterval);
+                }
+
+                // Check alarms every minute
+                this.activeAlarmInterval = setInterval(() => {
+                    const now = new Date();
+                    const currentTime = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false});
+
+                    this.alarms.forEach(alarm => {
+                        if (alarm.isActive && alarm.time === currentTime) {
+                            this.triggerAlarm(alarm);
+                        }
+                    });
+                }, 60000); // Check every minute
+            }
+
+            // Trigger alarm
+            triggerAlarm(alarm) {
+                // Play sound
+                alarmSound.play();
+
+                // Optional: Create a notification
+                this.showAlarmNotification(alarm);
+            }
+
+            // Show alarm notification
+            showAlarmNotification(alarm) {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(`Chapter Alarm: ${alarm.title}`, {
+                        body: `It's time for your scheduled chapter activity!`,
+                        icon: 'path/to/notification-icon.png'
+                    });
+                }
+            }
+
+            // Open Add Alarm Modal
+            openAddAlarmModal() {
+                const modal = document.getElementById('addAlarmModal');
+                if (modal) modal.classList.remove('hidden');
+            }
+
+            // Close Add Alarm Modal
+            closeAddAlarmModal() {
+                const modal = document.getElementById('addAlarmModal');
+                if (modal) modal.classList.add('hidden');
+            }
+
+            // Handle Add Alarm Form Submission
+            handleAddAlarmSubmit(event) {
+                event.preventDefault();
+                const chapterSelect = document.getElementById('alarmChapterSelect');
+                const timeInput = document.getElementById('alarmTimeInput');
+                const titleInput = document.getElementById('alarmTitleInput');
+
+                if (chapterSelect && timeInput && titleInput) {
+                    this.addAlarm(
+                        chapterSelect.value, 
+                        timeInput.value, 
+                        titleInput.value
+                    );
+                    this.closeAddAlarmModal();
+                }
+            }
+        }
+
+        // Initialize Alarm Manager
+        const alarmManager = new AlarmManager();
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Request notification permission
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+
+            // Load existing alarms
+            alarmManager.loadAlarms();
+        });
+
+        // Modal HTML to be added to your page
+        const alarmModalHTML = `
+            <div id="addAlarmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
+                <div class="bg-white p-6 rounded-xl w-96">
+                    <h2 class="text-xl font-semibold mb-4">Add New Alarm</h2>
+                    <form id="addAlarmForm">
+                        <div class="mb-4">
+                            <label class="block mb-2">Chapter</label>
+                            <select id="alarmChapterSelect" class="w-full border rounded p-2">
+                                <!-- Dynamically populate with chapters -->
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2">Time</label>
+                            <input 
+                                type="time" 
+                                id="alarmTimeInput" 
+                                class="w-full border rounded p-2"
+                                required
+                            >
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2">Alarm Title</label>
+                            <input 
+                                type="text" 
+                                id="alarmTitleInput" 
+                                class="w-full border rounded p-2"
+                                placeholder="Chapter Study Alarm"
+                                required
+                            >
+                        </div>
+                        <div class="flex justify-end space-x-2">
+                            <button 
+                                type="button" 
+                                onclick="alarmManager.closeAddAlarmModal()" 
+                                class="border px-4 py-2 rounded"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit" 
+                                class="bg-indigo-600 text-white px-4 py-2 rounded"
+                            >
+                                Add Alarm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        // Add alarm modal to the body
+        document.body.insertAdjacentHTML('beforeend', alarmModalHTML);
+
+        // Event listener for form submission
+        document.getElementById('addAlarmForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            alarmManager.handleAddAlarmSubmit(event);
+        });
+
+        // Function to populate chapter select in alarm modal
+        function populateChapterSelect() {
+            const chapterSelect = document.getElementById('alarmChapterSelect');
+            const chaptersList = document.getElementById('chaptersList');
+            
+            if (chapterSelect && chaptersList) {
+                const chapters = chaptersList.querySelectorAll('.chapter-item');
+                chapterSelect.innerHTML = Array.from(chapters).map(chapter => {
+                    const chapterId = chapter.getAttribute('data-chapter-id');
+                    const chapterTitle = chapter.querySelector('.chapter-title').textContent;
+                    return `<option value="${chapterId}">${chapterTitle}</option>`;
+                }).join('');
+            }
+        }
+
+        // Call this function whenever chapters are added or updated
+        document.addEventListener('chaptersUpdated', populateChapterSelect);
+
+        // Function to open alarms modal and show audio settings panel
+        function openAlarmsModals() {
+            const audioSettingsPanel = document.getElementById('audioSettingsPanel');
+            
+            // Toggle the display of the audio settings panel
+            if (audioSettingsPanel.style.display === 'none') {
+                audioSettingsPanel.style.display = 'block';
+            } else {
+                audioSettingsPanel.style.display = 'none';
+            }
+        }
+
+        function toggleTopicCompletion(chapterIndex, topicIndex) {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            chapters[chapterIndex].topics[topicIndex].completed = !chapters[chapterIndex].topics[topicIndex].completed;
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+            calculateCompletionRate();
+        }
+        
+        function startStudySession(chapterIndex, topicIndex = null) {
+            // If timer is running, save current session
+            if (isRunning) {
+                saveStudyTime();
+                pauseTimer();
+            }
+            
+            // Reset timer
+            seconds = 0;
+            timerDisplay.textContent = formatTime(seconds);
+            
+            // Set current study session
+            currentChapter = chapterIndex;
+            currentTopic = topicIndex;
+            updateCurrentChapterTag();
+            
+            // Start timer
+            startTimer();
+        }
+        
+        function updateCurrentChapterTag() {
+            if (currentChapter === null) {
+                currentChapterTag.textContent = "Not studying";
+                return;
+            }
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            const chapter = chapters[currentChapter];
+            
+            if (currentTopic === null) {
+                currentChapterTag.textContent = `Studying: ${chapter.name}`;
+            } else {
+                const topic = chapter.topics[currentTopic];
+                currentChapterTag.textContent = `Studying: ${chapter.name} > ${topic.name}`;
+            }
+        }
+        
+        function calculateOverallProgress(chapters) {
+            if (!chapters.length) {
+                document.getElementById('overallProgressBar').style.width = '0%';
+                document.getElementById('overallProgressText').textContent = '0%';
+                return;
+            }
+            
+            let totalTopics = 0;
+            let completedTopics = 0;
+            
+            chapters.forEach(chapter => {
+                if (chapter.topics && chapter.topics.length) {
+                    totalTopics += chapter.topics.length;
+                    completedTopics += chapter.topics.filter(t => t.completed).length;
+                } else {
+                    // For chapters without topics, count the chapter itself
+                    totalTopics += 1;
+                    completedTopics += chapter.completed ? 1 : 0;
+                }
+            });
+            
+            const progressPercentage = totalTopics ? Math.round((completedTopics / totalTopics) * 100) : 0;
+            document.getElementById('overallProgressBar').style.width = `${progressPercentage}%`;
+            document.getElementById('overallProgressText').textContent = `${progressPercentage}%`;
+        }
+
+        // Audio Functions
+        function playAlertSound() {
+            const soundUrl = document.getElementById('alarmSound').value;
+            const volume = document.getElementById('alarmVolume').value / 100;
+            
+            alertSound.src = soundUrl;
+            alertSound.volume = volume;
+            
+            const looped = document.getElementById('loopAlarmSound').checked;
+            alertSound.loop = looped;
+            
+            if(!looped) {
+                const alarmDuration = parseInt(document.getElementById('alarmDuration').value) * 1000;
+                
+                alarmTimeouts.push(setTimeout(() => {
+                    alertSound.pause();
+                    alertSound.currentTime = 0;
+                    activeAlarms.alert = false;
+                    updateSoundIndicator('alarm', false);
+                }, alarmDuration));
+            }
+            
+            alertSound.play().catch(e => console.log("Audio play error:", e));
+            activeAlarms.alert = true;
+            updateSoundIndicator('alarm', true);
+        }
+
+        function playStudySound() {
+            const soundUrl = document.getElementById('studySoundSelect').value;
+            const volume = document.getElementById('studyVolume').value / 100;
+            
+            studySound.src = soundUrl;
+            studySound.volume = volume;
+            studySound.loop = false;
+            
+            studySound.play().catch(e => console.log("Audio play error:", e));
+            activeAlarms.study = true;
+            updateSoundIndicator('study', true);
+            
+            // Auto-deactivate after sound finishes
+            studySound.onended = function() {
+                activeAlarms.study = false;
+                updateSoundIndicator('study', false);
+            };
+        }
+
+        function stopAllSounds() {
+            // Clear all timeouts
+            alarmTimeouts.forEach(timeout => clearTimeout(timeout));
+            alarmTimeouts = [];
+            
+            // Stop all sounds
+            alertSound.pause();
+            alertSound.currentTime = 0;
+            
+            breakSound.pause();
+            breakSound.currentTime = 0;
+            
+            studySound.pause();
+            studySound.currentTime = 0;
+            
+            // Reset active status
+            activeAlarms.alert = false;
+            activeAlarms.break = false;
+            activeAlarms.study = false;
+            
+            // Update indicators
+            updateSoundIndicator('alarm', false);
+            updateSoundIndicator('break', false);
+            updateSoundIndicator('study', false);
+        }
+
+        function updateSoundIndicator(type, active) {
+            switch(type) {
+                case 'alarm':
+                    alarmIndicator.className = active 
+                        ? 'flex items-center text-sm text-red-500 sound-active' 
+                        : 'flex items-center text-sm text-gray-500 opacity-50';
+                    break;
+                case 'break':
+                    breakIndicator.className = active 
+                        ? 'flex items-center text-sm text-blue-500 sound-active' 
+                        : 'flex items-center text-sm text-gray-500 opacity-50';
+                    break;
+                case 'study':
+                    studyIndicator.className = active 
+                        ? 'flex items-center text-sm text-green-500 sound-active' 
+                        : 'flex items-center text-sm text-gray-500 opacity-50';
+                    break;
+            }
+        }
+
+        // Test sound buttons
+        document.getElementById('testAlarmBtn').addEventListener('click', function() {
+            const soundUrl = document.getElementById('alarmSound').value;
+            const volume = document.getElementById('alarmVolume').value / 100;
+            
+            alertSound.loop = false;
+            alertSound.src = soundUrl;
+            alertSound.volume = volume;
+            alertSound.play().catch(e => console.log("Audio play error:", e));
+        });
+
+        //alarm sound setting
+        // Get subject from URL parameters
+        
+
+        // Audio elements and indicators
+        const alertSound = document.getElementById('alertSound');
+        const breakSound = document.getElementById('breakSound');
+        const studySound = document.getElementById('studySound');
+        const alarmIndicator = document.getElementById('alarmIndicator');
+        const breakIndicator = document.getElementById('breakIndicator');
+        const studyIndicator = document.getElementById('studyIndicator');
+        
+        // Active alarm tracking
+        let activeAlarms = {
+            alert: false,
+            break: false,
+            study: false
+        };
+        
+        let alarmTimeouts = [];
+
+        // Update title
+        document.getElementById('subjectTitle').textContent = subject || 'Study Timer';
+        if (subject) {
+            document.getElementById('subjectDescription').textContent = `Track your progress studying ${subject}`;
+        }
+
+        // Timer functionality
+        
+
+        // Initialize chapters in localStorage if not exists
+        if (!localStorage.getItem(`${subject}_chapters`)) {
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify([]));
+        }
+        
+        // Request notification permission
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+            }
+        }
+
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timer = setInterval(() => {
+                    seconds++;
+                    timerDisplay.textContent = formatTime(seconds);
+                    
+                    checkTimerAlerts();
+                }, 1000);
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                stopBtn.disabled = false;
+                updateTimerModeIndicator();
+                setReminderTimeout();
+            }
+        }
+
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timer);
+                clearTimeout(reminderTimeout);
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+            }
+        }
+
+        function stopTimer() {
+            // Stop any active alarms
+            stopAllSounds();
+            
+            if (currentChapter !== null && !isBreakTime) {
+                saveStudyTime();
+            }
+            
+            isRunning = false;
+            clearInterval(timer);
+            clearTimeout(reminderTimeout);
+            seconds = 0;
+            timerDisplay.textContent = formatTime(seconds);
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stopBtn.disabled = true;
+            
+            // Reset current study session
+            if (isBreakTime) {
+                isBreakTime = false;
+                updateTimerModeIndicator();
+            }
+            
+            currentChapter = null;
+            currentTopic = null;
+            updateCurrentChapterTag();
+        }
+
+        function saveStudyTime() {
+            if (currentChapter === null || isBreakTime) return;
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            if (currentTopic === null) {
+                // Add time to chapter
+                chapters[currentChapter].timeSpent += seconds;
+                
+                // Record study session in history
+                recordStudySession(chapters[currentChapter].name, null, seconds);
+            } else {
+                // Add time to topic
+                if (!chapters[currentChapter].topics[currentTopic].timeSpent) {
+                    chapters[currentChapter].topics[currentTopic].timeSpent = 0;
+                }
+                chapters[currentChapter].topics[currentTopic].timeSpent += seconds;
+                
+                // Record study session in history
+                recordStudySession(chapters[currentChapter].name, 
+                                chapters[currentChapter].topics[currentTopic].name,
+                                seconds);
+            }
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+        }
+
+        function recordStudySession(chapter, topic, duration) {
+            const today = new Date().toISOString().split('T')[0];
+            let history = JSON.parse(localStorage.getItem(`${subject}_history`) || '[]');
+            
+            history.push({
+                date: today,
+                chapter: chapter,
+                topic: topic,
+                duration: duration,
+                timestamp: new Date().getTime()
+            });
+            
+            localStorage.setItem(`${subject}_history`, JSON.stringify(history));
+        }
+
+        function checkTimerAlerts() {
+            const studyDuration = parseInt(document.getElementById('studyDuration').value) * 60;
+            const breakDuration = parseInt(document.getElementById('breakDuration').value) * 60;
+            
+            if (!isBreakTime && seconds >= studyDuration) {
+                // Study session complete, time for a break
+                saveStudyTime();
+                seconds = 0;
+                isBreakTime = true;
+                showToast('Time for a break!', 'green');
+                
+                // Play sound and send notification
+                if (document.getElementById('soundEnabled').checked) {
+                    playBreakSound();
+                }
+                
+                if (document.getElementById('backgroundNotifications').checked) {
+                    sendNotification('Break Time!', 'Your study session is complete. Time for a break.');
+                }
+                
+                updateTimerModeIndicator();
+            } else if (isBreakTime && seconds >= breakDuration) {
+                // Break complete, back to studying
+                seconds = 0;
+                isBreakTime = false;
+                showToast('Break over! Back to studying.', 'indigo');
+                
+                // Play sound and send notification
+                if (document.getElementById('soundEnabled').checked) {
+                    playStudySound();
+                }
+                
+                if (document.getElementById('backgroundNotifications').checked) {
+                    sendNotification('Study Time!', 'Your break is over. Time to get back to studying.');
+                }
+                
+                updateTimerModeIndicator();
+            }
+        }
+
+        function setReminderTimeout() {
+            clearTimeout(reminderTimeout);
+            
+            const reminderInterval = parseInt(document.getElementById('reminderInterval').value);
+            if (reminderInterval > 0 && !isBreakTime) {
+                const reminderSeconds = reminderInterval * 60;
+                reminderTimeout = setTimeout(() => {
+                    showToast('Remember to stay focused!', 'blue');
+                    if (document.getElementById('soundEnabled').checked) {
+                        playAlertSound();
+                    }
+                    
+                    if (document.getElementById('backgroundNotifications').checked) {
+                        sendNotification('Focus Reminder', 'Remember to stay focused on your studies!');
+                    }
+                    
+                    setReminderTimeout();
+                }, reminderSeconds * 1000);
+            }
+        }
+
+        function updateTimerModeIndicator() {
+            timerModeIndicator.className = isBreakTime 
+                ? 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium' 
+                : 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
+            
+            timerModeIndicator.innerHTML = isBreakTime 
+                ? '<i class="ri-rest-time-line mr-1"></i> Break Mode' 
+                : '<i class="ri-book-open-line mr-1"></i> Study Mode';
+            
+            timerModeIndicator.classList.remove('hidden');
+        }
+
+        function updateCurrentChapterTag() {
+            if (currentChapter === null) {
+                currentChapterTag.textContent = 'Not studying';
+                currentChapterTag.className = 'bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium';
+            } else {
+                const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+                let text = chapters[currentChapter].name;
+                
+                if (currentTopic !== null) {
+                    text += ` / ${chapters[currentChapter].topics[currentTopic].name}`;
+                }
+                
+                currentChapterTag.textContent = text;
+                currentChapterTag.className = 'bg-indigo-500 text-white px-3 py-1 rounded-full text-sm font-medium';
+            }
+        }
+
+        function sendNotification(title, message) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, {
+                    body: message,
+                    icon: '/favicon.ico'
+                });
+            }
+        }
+
+        // Audio Functions
+        function playAlertSound() {
+            const soundUrl = document.getElementById('alarmSound').value;
+            const volume = document.getElementById('alarmVolume').value / 100;
+            
+            alertSound.src = soundUrl;
+            alertSound.volume = volume;
+            
+            const looped = document.getElementById('loopAlarmSound').checked;
+            alertSound.loop = looped;
+            
+            if(!looped) {
+                const alarmDuration = parseInt(document.getElementById('alarmDuration').value) * 1000;
+                
+                alarmTimeouts.push(setTimeout(() => {
+                    alertSound.pause();
+                    alertSound.currentTime = 0;
+                    activeAlarms.alert = false;
+                    updateSoundIndicator('alarm', false);
+                }, alarmDuration));
+            }
+            
+            alertSound.play().catch(e => console.log("Audio play error:", e));
+            activeAlarms.alert = true;
+            updateSoundIndicator('alarm', true);
+        }
+
+        function playBreakSound() {
+            const soundUrl = document.getElementById('breakSoundSelect').value;
+            const volume = document.getElementById('breakVolume').value / 100;
+            
+            breakSound.src = soundUrl;
+            breakSound.volume = volume;
+            breakSound.loop = false;
+            
+            breakSound.play().catch(e => console.log("Audio play error:", e));
+            activeAlarms.break = true;
+            updateSoundIndicator('break', true);
+            
+            // Auto-deactivate after sound finishes
+            breakSound.onended = function() {
+                activeAlarms.break = false;
+                updateSoundIndicator('break', false);
+            };
+        }
+
+        function playStudySound() {
+            const soundUrl = document.getElementById('studySoundSelect').value;
+            const volume = document.getElementById('studyVolume').value / 100;
+            
+            studySound.src = soundUrl;
+            studySound.volume = volume;
+            studySound.loop = false;
+            
+            studySound.play().catch(e => console.log("Audio play error:", e));
+            activeAlarms.study = true;
+            updateSoundIndicator('study', true);
+            
+            // Auto-deactivate after sound finishes
+            studySound.onended = function() {
+                activeAlarms.study = false;
+                updateSoundIndicator('study', false);
+            };
+        }
+
+        function stopAllSounds() {
+            // Clear all timeouts
+            alarmTimeouts.forEach(timeout => clearTimeout(timeout));
+            alarmTimeouts = [];
+            
+            // Stop all sounds
+            alertSound.pause();
+            alertSound.currentTime = 0;
+            
+            breakSound.pause();
+            breakSound.currentTime = 0;
+            
+            studySound.pause();
+            studySound.currentTime = 0;
+            
+            // Reset active status
+            activeAlarms.alert = false;
+            activeAlarms.break = false;
+            activeAlarms.study = false;
+            
+            // Update indicators
+            updateSoundIndicator('alarm', false);
+            updateSoundIndicator('break', false);
+            updateSoundIndicator('study', false);
+        }
+
+        function updateSoundIndicator(type, active) {
+            switch(type) {
+                case 'alarm':
+                    alarmIndicator.className = active 
+                        ? 'flex items-center text-sm text-red-500 sound-active' 
+                        : 'flex items-center text-sm text-gray-500 opacity-50';
+                    break;
+                case 'break':
+                    breakIndicator.className = active 
+                        ? 'flex items-center text-sm text-blue-500 sound-active' 
+                        : 'flex items-center text-sm text-gray-500 opacity-50';
+                    break;
+                case 'study':
+                    studyIndicator.className = active 
+                        ? 'flex items-center text-sm text-green-500 sound-active' 
+                        : 'flex items-center text-sm text-gray-500 opacity-50';
+                    break;
+            }
+        }
+
+        // Chapter management functions
+        function refreshChaptersList() {
+            chaptersList.innerHTML = '';
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            if (chapters.length === 0) {
+                chaptersList.innerHTML = `
+                    <div class="text-center py-6 text-gray-500">
+                        <p>No chapters added yet. Add your first chapter to start studying!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            chapters.forEach((chapter, index) => {
+                const chapterCard = document.createElement('div');
+                chapterCard.className = 'bg-indigo-50 rounded-lg p-4 card-transition';
+                
+                const totalTopicTime = (chapter.topics || []).reduce((sum, topic) => sum + (topic.timeSpent || 0), 0);
+                const chapterTime = (chapter.timeSpent || 0) + totalTopicTime;
+                
+                chapterCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-indigo-800">${chapter.name}</h3>
+                            <p class="text-gray-600 text-sm">${chapter.description || ''}</p>
+                            <div class="text-gray-500 text-xs mt-1">Time spent: ${formatTimeDisplay(chapterTime)}</div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="startStudySession(${index}, null)" class="bg-green-500 text-white p-1 rounded hover:bg-green-600 transition">
+                                <i class="ri-play-line text-lg"></i>
+                            </button>
+                            <button onclick="openChapterAccordion(${index})" class="text-indigo-600 p-1 rounded hover:bg-indigo-100 transition">
+                                <i class="ri-arrow-down-s-line text-lg" id="chapterArrow-${index}"></i>
+                            </button>
+                            <div class="relative group">
+                                <button class="text-gray-500 p-1 rounded hover:bg-gray-200 transition">
+                                    <i class="ri-more-2-fill text-lg"></i>
+                                </button>
+                                <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
+                                    <div class="py-1">
+                                        <button onclick="editChapter(${index})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="ri-edit-line mr-2"></i> Edit
+                                        </button>
+                                        <button onclick="openAddTopicModal(${index})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="ri-add-line mr-2"></i> Add Topic
+                                        </button>
+                                        <button onclick="deleteChapter(${index})" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                            <i class="ri-delete-bin-line mr-2"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chapter-accordion" id="chapterAccordion-${index}">
+                        ${createTopicsList(chapter.topics || [], index)}
+                        <button onclick="openAddTopicModal(${index})" class="text-indigo-600 text-sm mt-3 flex items-center hover:text-indigo-800">
+                            <i class="ri-add-line mr-1"></i> Add Topic
+                        </button>
+                    </div>
+                `;
+                
+                chaptersList.appendChild(chapterCard);
+            });
+        }
+
+        function createTopicsList(topics, chapterIndex) {
+            if (!topics || topics.length === 0) {
+                return `<p class="text-gray-500 text-sm mt-2 mb-1">No topics yet</p>`;
+            }
+            
+            let html = `<div class="mt-3 space-y-2">`;
+            
+            topics.forEach((topic, index) => {
+                html += `
+                    <div class="bg-white rounded-md p-3 shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <div class="flex-1">
+                                <h4 class="font-medium text-indigo-700">${topic.name}</h4>
+                                <p class="text-gray-600 text-xs">${topic.description || ''}</p>
+                                <div class="text-gray-500 text-xs mt-1">Time spent: ${formatTimeDisplay(topic.timeSpent || 0)}</div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="startStudySession(${chapterIndex}, ${index})" 
+                                        class="bg-green-500 text-white p-1 rounded hover:bg-green-600 transition">
+                                    <i class="ri-play-line"></i>
+                                </button>
+                                <div class="relative group">
+                                    <button class="text-gray-500 p-1 rounded hover:bg-gray-200 transition">
+                                        <i class="ri-more-2-fill"></i>
+                                    </button>
+                                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
+                                        <div class="py-1">
+                                            <button onclick="editTopic(${chapterIndex}, ${index})" 
+                                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                <i class="ri-edit-line mr-2"></i> Edit
+                                            </button>
+                                            <button onclick="deleteTopic(${chapterIndex}, ${index})" 
+                                                    class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                <i class="ri-delete-bin-line mr-2"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            return html;
+        }
+
+        function formatTimeDisplay(seconds) {
+            if (!seconds) return '0 min';
+            
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            } else {
+                return `${minutes} min`;
+            }
+        }
+
+        function openChapterAccordion(index) {
+            const accordion = document.getElementById(`chapterAccordion-${index}`);
+            const arrow = document.getElementById(`chapterArrow-${index}`);
+            
+            accordion.classList.toggle('open');
+            
+            if (accordion.classList.contains('open')) {
+                arrow.className = 'ri-arrow-up-s-line text-lg';
+            } else {
+                arrow.className = 'ri-arrow-down-s-line text-lg';
+            }
+        }
+
+        function startStudySession(chapterIndex, topicIndex) {
+            // If timer is running, save current study time
+            if (isRunning && currentChapter !== null && !isBreakTime) {
+                saveStudyTime();
+            }
+            
+            // Reset timer
+            stopTimer();
+            
+            // Set new chapter/topic
+            currentChapter = chapterIndex;
+            currentTopic = topicIndex;
+            updateCurrentChapterTag();
+            
+            // Reset break mode if necessary
+            if (isBreakTime) {
+                isBreakTime = false;
+            }
+            
+            // Start new timer
+            startTimer();
+            
+            // Play sound
+            if (document.getElementById('soundEnabled').checked) {
+                playStudySound();
+            }
+            
+            showToast(`Started studying ${topicIndex !== null ? 'topic' : 'chapter'}`, 'green');
+        }
+
+        // Modal functions
+        function openAddChapterModal() {
+            document.getElementById('addChapterModal').classList.remove('hidden');
+            document.getElementById('chapterName').focus();
+        }
+
+        function closeAddChapterModal() {
+            document.getElementById('addChapterModal').classList.add('hidden');
+            document.getElementById('addChapterForm').reset();
+        }
+
+        function openAddTopicModal(chapterIndex) {
+            document.getElementById('parentChapterIndex').value = chapterIndex;
+            document.getElementById('addTopicModal').classList.remove('hidden');
+            document.getElementById('topicName').focus();
+        }
+
+        function closeAddTopicModal() {
+            document.getElementById('addTopicModal').classList.add('hidden');
+            document.getElementById('addTopicForm').reset();
+        }
+
+        function addNewChapter(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('chapterName').value.trim();
+            const description = document.getElementById('chapterDescription').value.trim();
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            chapters.push({
+                name: name,
+                description: description,
+                timeSpent: 0,
+                topics: [],
+                created: new Date().toISOString()
+            });
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+            closeAddChapterModal();
+            
+            showToast('Chapter added successfully!', 'green');
+        }
+
+        function addNewTopic(event) {
+            event.preventDefault();
+            
+            const chapterIndex = document.getElementById('parentChapterIndex').value;
+            const name = document.getElementById('topicName').value.trim();
+            const description = document.getElementById('topicDescription').value.trim();
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            if (!chapters[chapterIndex].topics) {
+                chapters[chapterIndex].topics = [];
+            }
+            
+            chapters[chapterIndex].topics.push({
+                name: name,
+                description: description,
+                timeSpent: 0,
+                created: new Date().toISOString()
+            });
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+            closeAddTopicModal();
+            
+            showToast('Topic added successfully!', 'green');
+            
+            // Open the chapter accordion
+            setTimeout(() => {
+                openChapterAccordion(chapterIndex);
+            }, 100);
+        }
+
+        function editChapter(index) {
+            // TODO: Implement chapter editing
+            alert('Edit chapter feature coming soon');
+        }
+
+        function editTopic(chapterIndex, topicIndex) {
+            // TODO: Implement topic editing
+            alert('Edit topic feature coming soon');
+        }
+
+        function deleteChapter(index) {
+            if (confirm('Are you sure you want to delete this chapter? All study time data will be lost.')) {
+                const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+                chapters.splice(index, 1);
+                localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+                refreshChaptersList();
+                
+                showToast('Chapter deleted', 'red');
+            }
+        }
+
+        function deleteTopic(chapterIndex, topicIndex) {
+            if (confirm('Are you sure you want to delete this topic? All study time data will be lost.')) {
+                const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+                chapters[chapterIndex].topics.splice(topicIndex, 1);
+                localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+                refreshChaptersList();
+                
+                showToast('Topic deleted', 'red');
+            }
+        }
+
+        // Toast notification function
+        function showToast(message, color = 'indigo') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgColor, textColor;
+            switch (color) {
+                case 'green':
+                    bgColor = 'bg-green-500';
+                    textColor = 'text-white';
+                    break;
+                case 'red':
+                    bgColor = 'bg-red-500';
+                    textColor = 'text-white';
+                    break;
+                case 'blue':
+                    bgColor = 'bg-blue-500';
+                    textColor = 'text-white';
+                    break;
+                default:
+                    bgColor = 'bg-indigo-500';
+                    textColor = 'text-white';
+            }
+            
+            toast.className = `toast ${bgColor} ${textColor} px-4 py-3 rounded-lg shadow-lg`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="ri-information-line mr-2"></i>
+                    <span>${message}</span>
+                </div>
+                <div class="progress-bar"></div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        // Audio Controls
+        document.getElementById('toggleAudioSettings').addEventListener('click', function() {
+            const panel = document.getElementById('audioSettingsPanel');
+            panel.classList.toggle('open');
+        });
+        
+        // Test sound buttons
+        document.getElementById('testAlarmBtn').addEventListener('click', function() {
+            const soundUrl = document.getElementById('alarmSound').value;
+            const volume = document.getElementById('alarmVolume').value / 100;
+            
+            alertSound.loop = false;
+            alertSound.src = soundUrl;
+            alertSound.volume = volume;
+            alertSound.play().catch(e => console.log("Audio play error:", e));
+        });
+        
+        document.getElementById('testBreakBtn').addEventListener('click', function() {
+            const soundUrl = document.getElementById('breakSoundSelect').value;
+            const volume = document.getElementById('breakVolume').value / 100;
+            
+            breakSound.loop = false;
+            breakSound.src = soundUrl;
+            breakSound.volume = volume;
+            breakSound.play().catch(e => console.log("Audio play error:", e));
+        });
+        
+        document.getElementById('testStudyBtn').addEventListener('click', function() {
+            const soundUrl = document.getElementById('studySoundSelect').value;
+            const volume = document.getElementById('studyVolume').value / 100;
+            
+            studySound.loop = false;
+            studySound.src = soundUrl;
+            studySound.volume = volume;
+            studySound.play().catch(e => console.log("Audio play error:", e));
+        });
+
+        // Event listeners for timer buttons
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        
+        // Initialize UI
+        refreshChaptersList();
+        
+        // Check for notification permission
+        requestNotificationPermission();
+        
+        // Set default checkboxes
+        document.getElementById('soundEnabled').checked = true;
+        document.getElementById('loopAlarmSound').checked = false;
+        document.getElementById('backgroundNotifications').checked = true;
+
+        // When document loads fully
+        document.addEventListener('DOMContentLoaded', function() {
+            // If the URL has a chapter parameter, attempt to start that session
+            const chapterParam = urlParams.get('chapter');
+            const topicParam = urlParams.get('topic');
+            
+            if (chapterParam !== null) {
+                const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+                const chapterIndex = chapters.findIndex(c => c.name.toLowerCase() === chapterParam.toLowerCase());
+                
+                if (chapterIndex !== -1) {
+                    let topicIndex = null;
+                    
+                    if (topicParam !== null && chapters[chapterIndex].topics) {
+                        topicIndex = chapters[chapterIndex].topics.findIndex(
+                            t => t.name.toLowerCase() === topicParam.toLowerCase()
+                        );
+                    }
+                    
+                    // Start the study session with a slight delay
+                    setTimeout(() => {
+                        startStudySession(chapterIndex, topicIndex !== -1 ? topicIndex : null);
+                    }, 500);
+                }
+            }
+        });
+        
+    </script>
+</body>
+</html>

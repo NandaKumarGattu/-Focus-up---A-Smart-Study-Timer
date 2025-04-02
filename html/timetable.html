@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatic Timetable Generator</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+
+        .app-description {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .setup-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-add {
+            background: var(--success-color);
+        }
+
+        .btn-add:hover {
+            background: #27ae60;
+        }
+
+        .btn-remove {
+            background: #e74c3c;
+        }
+
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+
+        .subjects-list {
+            margin-top: 20px;
+        }
+
+        .subject-item {
+            display: flex;
+            align-items: center;
+            background: var(--light-color);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .subject-details {
+            flex-grow: 1;
+        }
+
+        .subject-name {
+            font-weight: 600;
+        }
+
+        .subject-level {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .timetable {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: var(--dark-color);
+            color: white;
+        }
+
+        .time-slot {
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+
+        .subject-cell {
+            position: relative;
+            min-height: 80px;
+            transition: background 0.3s;
+        }
+
+        .subject-cell:hover {
+            background: #f5f5f5;
+        }
+
+        .print-btn {
+            margin-top: 20px;
+            background: var(--dark-color);
+        }
+
+        .print-btn:hover {
+            background: #2c3e50;
+        }
+
+        .subject-cell.level-basic {
+            background-color: #d1f2eb;
+        }
+
+        .subject-cell.level-intermediate {
+            background-color: #d6eaf8;
+        }
+
+        .subject-cell.level-advanced {
+            background-color: #e8daef;
+        }
+
+        .legend {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .basic-color {
+            background-color: #d1f2eb;
+        }
+
+        .intermediate-color {
+            background-color: #d6eaf8;
+        }
+
+        .advanced-color {
+            background-color: #e8daef;
+        }
+
+        @media print {
+            .setup-panel, .print-btn {
+                display: none;
+            }
+            .container {
+                width: 100%;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .subject-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .btn-remove {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Automatic Timetable Generator</h1>
+            <p class="app-description">Create your personalized weekly timetable by adding subjects and their difficulty levels. The system will generate an optimized schedule for your studies.</p>
+        </header>
+
+        <div class="setup-panel">
+            <div class="form-group">
+                <label for="subject-name">Subject Name</label>
+                <input type="text" id="subject-name" placeholder="Enter subject name">
+            </div>
+            <div class="form-group">
+                <label for="subject-level">Difficulty Level</label>
+                <select id="subject-level">
+                    <option value="basic">Basic</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="hours-per-week">Hours Per Week</label>
+                <select id="hours-per-week">
+                    <option value="1">1 hour</option>
+                    <option value="2">2 hours</option>
+                    <option value="3">3 hours</option>
+                    <option value="4">4 hours</option>
+                    <option value="5">5 hours</option>
+                </select>
+            </div>
+            <button class="btn btn-add" id="add-subject">Add Subject</button>
+
+            <div class="subjects-list" id="subjects-list"></div>
+        </div>
+
+        <button class="btn" id="generate-btn">Generate Timetable</button>
+
+        <div id="timetable-container" style="display: none;">
+            <div class="timetable">
+                <table id="timetable">
+                    <thead>
+                        <tr>
+                            <th>Time / Day</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timetable-body">
+                        <!-- Timetable will be generated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="color-box basic-color"></div>
+                    <span>Basic</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box intermediate-color"></div>
+                    <span>Intermediate</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box advanced-color"></div>
+                    <span>Advanced</span>
+                </div>
+            </div>
+
+            <button class="btn print-btn" id="print-btn">Print Timetable</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const subjects = [];
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            const timeSlots = ['9:00 - 10:00', '10:00 - 11:00', '11:00 - 12:00', '12:00 - 13:00', 
+                              '14:00 - 15:00', '15:00 - 16:00', '16:00 - 17:00'];
+            
+            // Add subject to the list
+            document.getElementById('add-subject').addEventListener('click', function() {
+                const subjectName = document.getElementById('subject-name').value.trim();
+                const subjectLevel = document.getElementById('subject-level').value;
+                const hoursPerWeek = parseInt(document.getElementById('hours-per-week').value);
+                
+                if (!subjectName) {
+                    alert('Please enter a subject name');
+                    return;
+                }
+                
+                subjects.push({
+                    name: subjectName,
+                    level: subjectLevel,
+                    hours: hoursPerWeek
+                });
+                
+                updateSubjectsList();
+                clearInputs();
+            });
+            
+            // Generate timetable
+            document.getElementById('generate-btn').addEventListener('click', function() {
+                if (subjects.length === 0) {
+                    alert('Please add at least one subject');
+                    return;
+                }
+                
+                generateTimetable();
+                document.getElementById('timetable-container').style.display = 'block';
+            });
+            
+            // Print timetable
+            document.getElementById('print-btn').addEventListener('click', function() {
+                window.print();
+            });
+            
+            // Update subjects list in UI
+            function updateSubjectsList() {
+                const listElement = document.getElementById('subjects-list');
+                listElement.innerHTML = '';
+                
+                subjects.forEach((subject, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'subject-item';
+                    
+                    const details = document.createElement('div');
+                    details.className = 'subject-details';
+                    
+                    const name = document.createElement('div');
+                    name.className = 'subject-name';
+                    name.textContent = subject.name;
+                    
+                    const info = document.createElement('div');
+                    info.className = 'subject-level';
+                    info.textContent = `${capitalize(subject.level)} • ${subject.hours} hours per week`;
+                    
+                    details.appendChild(name);
+                    details.appendChild(info);
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn-remove';
+                    removeBtn.textContent = 'Remove';
+                    removeBtn.onclick = function() {
+                        subjects.splice(index, 1);
+                        updateSubjectsList();
+                    };
+                    
+                    item.appendChild(details);
+                    item.appendChild(removeBtn);
+                    listElement.appendChild(item);
+                });
+            }
+            
+            // Generate the actual timetable
+            function generateTimetable() {
+                const timetableBody = document.getElementById('timetable-body');
+                timetableBody.innerHTML = '';
+                
+                // Create the timetable grid
+                const timetable = createEmptyTimetable();
+                
+                // Sort subjects by level difficulty and hours
+                const sortedSubjects = [...subjects].sort((a, b) => {
+                    const levelOrder = { 'advanced': 3, 'intermediate': 2, 'basic': 1 };
+                    if (levelOrder[a.level] !== levelOrder[b.level]) {
+                        return levelOrder[b.level] - levelOrder[a.level];
+                    }
+                    return b.hours - a.hours;
+                });
+                
+                // Distribute subjects across the timetable
+                distributeSubjects(timetable, sortedSubjects);
+                
+                // Render the timetable
+                renderTimetable(timetable);
+            }
+            
+            function createEmptyTimetable() {
+                const timetable = [];
+                for (let i = 0; i < timeSlots.length; i++) {
+                    timetable[i] = Array(days.length).fill(null);
+                }
+                return timetable;
+            }
+            
+            function distributeSubjects(timetable, subjectsList) {
+                subjectsList.forEach(subject => {
+                    let remainingHours = subject.hours;
+                    
+                    // Try to distribute evenly across days
+                    while (remainingHours > 0) {
+                        let placed = false;
+                        
+                        // Find best slot for this subject
+                        for (let timeIndex = 0; timeIndex < timeSlots.length && !placed; timeIndex++) {
+                            const preferredDayOrder = getPreferredDayOrder(subject.level);
+                            
+                            for (let dayOrderIndex = 0; dayOrderIndex < preferredDayOrder.length && !placed; dayOrderIndex++) {
+                                const dayIndex = preferredDayOrder[dayOrderIndex];
+                                
+                                if (timetable[timeIndex][dayIndex] === null) {
+                                    timetable[timeIndex][dayIndex] = subject;
+                                    remainingHours--;
+                                    placed = true;
+                                }
+                            }
+                        }
+                        
+                        if (!placed) {
+                            // Fallback: find any available slot
+                            outerLoop:
+                            for (let timeIndex = 0; timeIndex < timeSlots.length; timeIndex++) {
+                                for (let dayIndex = 0; dayIndex < days.length; dayIndex++) {
+                                    if (timetable[timeIndex][dayIndex] === null) {
+                                        timetable[timeIndex][dayIndex] = subject;
+                                        remainingHours--;
+                                        break outerLoop;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If we can't place any more, break
+                        if (!placed) break;
+                    }
+                });
+            }
+            
+            function getPreferredDayOrder(level) {
+                // Different subjects are better studied at different times of the week
+                switch (level) {
+                    case 'advanced':
+                        return [0, 1, 2, 3, 4]; // Spread throughout the week
+                    case 'intermediate':
+                        return [1, 3, 0, 2, 4]; // Mid-week focus
+                    case 'basic':
+                        return [0, 4, 1, 3, 2]; // Beginning and end of week
+                    default:
+                        return [0, 1, 2, 3, 4];
+                }
+            }
+            
+            function renderTimetable(timetable) {
+                const timetableBody = document.getElementById('timetable-body');
+                
+                timeSlots.forEach((timeSlot, timeIndex) => {
+                    const row = document.createElement('tr');
+                    
+                    // Add time slot
+                    const timeCell = document.createElement('td');
+                    timeCell.className = 'time-slot';
+                    timeCell.textContent = timeSlot;
+                    row.appendChild(timeCell);
+                    
+                    // Add each day's subject
+                    days.forEach((day, dayIndex) => {
+                        const cell = document.createElement('td');
+                        const subject = timetable[timeIndex][dayIndex];
+                        
+                        if (subject) {
+                            cell.className = `subject-cell level-${subject.level}`;
+                            
+                            const subjectName = document.createElement('div');
+                            subjectName.className = 'cell-subject-name';
+                            subjectName.textContent = subject.name;
+                            
+                            const subjectLevel = document.createElement('div');
+                            subjectLevel.className = 'cell-subject-level';
+                            subjectLevel.textContent = capitalize(subject.level);
+                            
+                            cell.appendChild(subjectName);
+                            cell.appendChild(subjectLevel);
+                        } else {
+                            cell.className = 'subject-cell';
+                            cell.textContent = 'Free';
+                        }
+                        
+                        row.appendChild(cell);
+                    });
+                    
+                    timetableBody.appendChild(row);
+                });
+            }
+            
+            // Helper functions
+            function clearInputs() {
+                document.getElementById('subject-name').value = '';
+                document.getElementById('subject-level').selectedIndex = 0;
+                document.getElementById('hours-per-week').selectedIndex = 0;
+            }
+            
+            function capitalize(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+        });
+    </script>
+</body>
+</html>

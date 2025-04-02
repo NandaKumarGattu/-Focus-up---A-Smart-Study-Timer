@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Preparation Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3B82F6;
+            --secondary-color: #10B981;
+            --bg-color: #F4F7F6;
+        }
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+        }
+        .exam-card {
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+        .exam-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        .gradient-border {
+            position: relative;
+            overflow: hidden;
+        }
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, #6A11CB 0%, #2575FC 100%);
+        }
+        .modal {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="ri-book-2-line text-3xl"></i>
+                <span class="text-2xl font-bold">FocusUP</span>
+            </div>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="home.html" class="hover:text-blue-200 transition">Home</a></li>
+                    <li><a href="subjects.html" class="hover:text-blue-200 transition">Subjects</a></li>
+                    <li><a href="#" class="hover:text-blue-200 transition">Mock Tests</a></li>
+                    <li><a href="signup.html" class="bg-green-500 px-4 py-2 rounded-full hover:bg-green-600 transition">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Exam Preparation Section -->
+    <div class="container mx-auto mt-10 px-4">
+        <h2 class="text-4xl font-bold mb-8 text-center text-gray-800">Competitive Exam Timers</h2>
+        
+        <div id="examGrid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- JEE Exam Card -->
+            <div class="exam-card bg-white rounded-2xl shadow-lg p-6 text-center gradient-border">
+                <i class="ri-book-open-line text-6xl mb-4 text-blue-600"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">JEE Preparation</h3>
+                <p class="text-gray-600 mb-6">Engineering Entrance Exam Timer</p>
+                <button onclick="window.location.href='examschapters.html?subject=JEE Preparation'" class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center space-x-2">
+                    <i class="ri-timer-line"></i>       
+                    <span>Start Study Timer</span>                   
+                </button>
+            </div>
+
+            <!-- MAINS Exam Card -->
+            <div class="exam-card bg-white rounded-2xl shadow-lg p-6 text-center gradient-border">
+                <i class="ri-book-read-line text-6xl mb-4 text-green-600"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">MAINS Preparation</h3>
+                <p class="text-gray-600 mb-6">Central University Entrance Exam Timer</p>
+                <button onclick="window.location.href='examschapters.html?subject=MAINS Preparation'" class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center space-x-2">
+                    <i class="ri-timer-line"></i>       
+                    <span>Start Study Timer</span>                   
+                </button>
+            </div>
+
+            <!-- UPSC Exam Card -->
+            <div class="exam-card bg-white rounded-2xl shadow-lg p-6 text-center gradient-border">
+                <i class="ri-government-line text-6xl mb-4 text-purple-600"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">UPSC Preparation</h3>
+                <p class="text-gray-600 mb-6">Civil Services Exam Timer</p>
+                <button onclick="window.location.href='examschapters.html?subject=UPSC Preparation'" class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center space-x-2">
+                    <i class="ri-timer-line"></i>       
+                    <span>Start Study Timer</span>                   
+                </button>
+            </div>
+
+            <!-- Add New Exam Card -->
+            <div class="exam-card bg-white rounded-2xl shadow-lg p-6 text-center gradient-border cursor-pointer" onclick="openAddExamModal()">
+                <i class="ri-add-circle-line text-6xl mb-4 text-gray-400"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">Add New Exam</h3>
+                <p class="text-gray-600 mb-6">Create a custom exam timer</p>
+                <button class="w-full bg-gray-200 text-gray-600 px-6 py-3 rounded-lg hover:bg-gray-300 transition flex items-center justify-center space-x-2">
+                    <i class="ri-add-line"></i>       
+                    <span>Add Exam</span>                   
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Exam Modal -->
+    <div id="addExamModal" class="modal fixed inset-0 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 w-full max-w-md">
+            <h3 class="text-2xl font-bold mb-4">Add New Exam</h3>
+            <form id="addExamForm" onsubmit="addNewExam(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="examName">
+                        Exam Name
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="examName" type="text" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="examDescription">
+                        Description
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="examDescription" type="text" required>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeAddExamModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Add Exam
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const examGrid = document.getElementById('examGrid');
+        const addExamModal = document.getElementById('addExamModal');
+        const addExamForm = document.getElementById('addExamForm');
+
+        function openAddExamModal() {
+            addExamModal.classList.remove('hidden');
+        }
+
+        function closeAddExamModal() {
+            addExamModal.classList.add('hidden');
+            addExamForm.reset();
+        }
+
+        function addNewExam(event) {
+            event.preventDefault();
+            
+            const examName = document.getElementById('examName').value;
+            const examDescription = document.getElementById('examDescription').value;
+            
+            const newExamCard = document.createElement('div');
+            newExamCard.className = 'exam-card bg-white rounded-2xl shadow-lg p-6 text-center gradient-border';
+            newExamCard.innerHTML = `
+                <i class="ri-book-line text-6xl mb-4 text-indigo-600"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">${examName}</h3>
+                <p class="text-gray-600 mb-6">${examDescription}</p>
+                <button onclick="window.location.href='examschapters.html?subject=${encodeURIComponent(examName)}'" class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center space-x-2">
+                    <i class="ri-timer-line"></i>       
+                    <span>Start Study Timer</span>                   
+                </button>
+            `;
+
+            // Insert the new exam card before the "Add New Exam" card
+            const addNewExamCard = examGrid.lastElementChild;
+            examGrid.insertBefore(newExamCard, addNewExamCard);
+
+            closeAddExamModal();
+        }
+
+        // Close modal when clicking outside
+        addExamModal.addEventListener('click', function(event) {
+            if (event.target === addExamModal) {
+                closeAddExamModal();
+            }
+        });
+    </script>
+</body>
+</html>

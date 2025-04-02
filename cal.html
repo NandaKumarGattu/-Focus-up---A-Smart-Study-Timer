@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Timer Calendar</title>
+    <style>
+        :root {
+            --primary: #4e73df;
+            --primary-dark: #3a56b0;
+            --secondary: #f8f9fc;
+            --text: #333;
+            --border: #e3e6f0;
+            --success: #1cc88a;
+            --danger: #e74a3b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            grid-column: 1 / -1;
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-dark);
+        }
+        
+        .form-section, .sessions-section, .calendar-section, .notes-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-section h2, .sessions-section h2, .calendar-section h2, .notes-section h2 {
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .sessions-list, .notes-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .session-item, .note-item {
+            background-color: var(--secondary);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .session-item h3, .note-item h3 {
+            margin-bottom: 5px;
+        }
+        
+        .session-item p, .note-item p {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .session-actions, .note-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .session-actions button, .note-actions button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .delete-btn {
+            background-color: var(--danger);
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .calendar th, .calendar td {
+            border: 1px solid var(--border);
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .calendar th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .calendar td {
+            height: 100px;
+            vertical-align: top;
+            position: relative;
+        }
+        
+        .calendar .event {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 4px;
+            padding: 2px 5px;
+            margin-bottom: 2px;
+            font-size: 12px;
+            text-align: left;
+            cursor: pointer;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .notification h3 {
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        .notification-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        
+        .notification-actions button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .active-day {
+            background-color: #e8f4ff;
+        }
+        
+        .today {
+            background-color: #ffe8e8;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 8px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        
+        .note-toolbar {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .has-notes-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--success);
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-color: var(--border);
+            border-bottom-color: white;
+            margin-bottom: -1px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .file-upload {
+            border: 2px dashed var(--border);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .file-list {
+            margin-top: 15px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background-color: var(--secondary);
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Study Timer Calendar</h1>
+            <p>Organize your study sessions, get notifications, and take notes</p>
+        </header>
+
+        <div class="form-section">
+            <h2>Add Study Session</h2>
+            <form id="studyForm">
+                <div class="form-group">
+                    <label for="title">Session Title</label>
+                    <input type="text" id="title" required placeholder="Math Revision">
+                </div>
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="time">Time</label>
+                    <input type="time" id="time" required>
+                </div>
+                <div class="form-group">
+                    <label for="duration">Duration (minutes)</label>
+                    <input type="number" id="duration" min="5" max="360" value="60" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" rows="3" placeholder="Topics to cover, goals, etc."></textarea>
+                </div>
+                <button type="submit">Add Session</button>
+            </form>
+        </div>
+
+        <div class="calendar-section">
+            <h2>Calendar</h2>
+            <div id="currentMonth"></div>
+            <div class="calendar-nav">
+                <button id="prevMonth">Previous Month</button>
+                <button id="nextMonth">Next Month</button>
+            </div>
+            <div id="calendar"></div>
+        </div>
+
+        <div class="sessions-section">
+            <h2>Upcoming Study Sessions</h2>
+            <div id="sessionsList" class="sessions-list">
+                <!-- Sessions will be populated here -->
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <h2>Study Notes</h2>
+            <div class="tabs">
+                <div class="tab active" data-tab="all-notes">All Notes</div>
+                <div class="tab" data-tab="by-subject">By Subject</div>
+            </div>
+            <div class="tab-content active" id="all-notes">
+                <div id="notesList" class="notes-list">
+                    <!-- Notes will be populated here -->
+                </div>
+            </div>
+            <div class="tab-content" id="by-subject">
+                <div id="subjectsList" class="notes-list">
+                    <!-- Subjects will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <h3 id="notificationTitle">Study Time!</h3>
+        <p id="notificationMessage">It's time for your scheduled study session.</p>
+        <div class="notification-actions">
+            <button id="dismissBtn">Dismiss</button>
+            <button id="startTimerBtn">Start Timer</button>
+        </div>
+    </div>
+
+    <!-- Note Taking Modal -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="noteModalTitle">Study Notes</h2>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="note-content">Notes</div>
+                <div class="tab" data-tab="materials">Materials</div>
+            </div>
+            
+            <div class="tab-content active" id="note-content">
+                <div class="note-toolbar">
+                    <button id="saveNoteBtn">Save Note</button>
+                </div>
+                <div class="form-group">
+                    <label for="noteTitle">Title</label>
+                    <input type="text" id="noteTitle" placeholder="Note Title">
+                </div>
+                <div class="form-group">
+                    <label for="noteText">Notes</label>
+                    <textarea id="noteText" rows="10" placeholder="Take your study notes here..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="noteKeyPoints">Key Points/Summary</label>
+                    <textarea id="noteKeyPoints" rows="3" placeholder="Summarize key points..."></textarea>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="materials">
+                <div class="file-upload">
+                    <p>Drag and drop files here or</p>
+                    <input type="file" id="fileUpload" multiple>
+                    <button id="addFileBtn">Add Files</button>
+                </div>
+                <div id="fileList" class="file-list">
+                    <!-- Files will be listed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Note View Modal -->
+    <div id="viewNoteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="viewNoteTitle">View Note</h2>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="view-note-content">Notes</div>
+                <div class="tab" data-tab="view-materials">Materials</div>
+            </div>
+            
+            <div class="tab-content active" id="view-note-content">
+                <div class="session-info" id="viewSessionInfo">
+                    <!-- Session info will be displayed here -->
+                </div>
+                <h3 id="viewNoteTitleDisplay"></h3>
+                <div id="viewNoteTextDisplay" style="white-space: pre-wrap; margin: 15px 0; padding: 10px; background-color: var(--secondary); border-radius: 4px;"></div>
+                <div>
+                    <h4>Key Points:</h4>
+                    <div id="viewNoteKeyPointsDisplay" style="white-space: pre-wrap; margin: 15px 0; padding: 10px; background-color: var(--secondary); border-radius: 4px;"></div>
+                </div>
+                <div class="note-actions">
+                    <button id="editNoteBtn">Edit Note</button>
+                    <button id="deleteNoteBtn" class="delete-btn">Delete Note</button>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="view-materials">
+                <div id="viewFileList" class="file-list">
+                    <!-- Files will be listed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="alarmSound" src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Request permission for notifications
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+
+            // Storage wrapper that works with or without localStorage
+            const storage = {
+                data: {
+                    studySessions: [],
+                    studyNotes: [],
+                    studyMaterials: []
+                },
+                getItem: function(key) {
+                    try {
+                        // Try to use localStorage first
+                        if (window.localStorage) {
+                            return localStorage.getItem(key);
+                        }
+                    } catch (e) {
+                        console.log('localStorage not available, using in-memory storage');
+                    }
+                    // Fallback to in-memory storage
+                    return JSON.stringify(this.data[key] || null);
+                },
+                setItem: function(key, value) {
+                    try {
+                        // Try to use localStorage first
+                        if (window.localStorage) {
+                            localStorage.setItem(key, value);
+                            return;
+                        }
+                    } catch (e) {
+                        console.log('localStorage not available, using in-memory storage');
+                    }
+                    // Fallback to in-memory storage
+                    try {
+                        this.data[key] = JSON.parse(value);
+                    } catch (e) {
+                        this.data[key] = value;
+                    }
+                }
+            };
+
+            // Initialize storage
+            if (!storage.getItem('studySessions') || storage.getItem('studySessions') === 'null') {
+                storage.setItem('studySessions', JSON.stringify([]));
+            }
+            if (!storage.getItem('studyNotes') || storage.getItem('studyNotes') === 'null') {
+                storage.setItem('studyNotes', JSON.stringify([]));
+            }
+            if (!storage.getItem('studyMaterials') || storage.getItem('studyMaterials') === 'null') {
+                storage.setItem('studyMaterials', JSON.stringify([]));
+            }
+
+            // DOM elements
+            const studyForm = document.getElementById('studyForm');
+            const sessionsList = document.getElementById('sessionsList');
+            const notesList = document.getElementById('notesList');
+            const subjectsList = document.getElementById('subjectsList');
+            const calendarDiv = document.getElementById('calendar');
+            const currentMonthDiv = document.getElementById('currentMonth');
+            const prevMonthBtn = document.getElementById('prevMonth');
+            const nextMonthBtn = document.getElementById('nextMonth');
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notificationTitle');
+            const notificationMessage = document.getElementById('notificationMessage');
+            const dismissBtn = document.getElementById('dismissBtn');
+            const startTimerBtn = document.getElementById('startTimerBtn');
+            
+            // Note modal elements
+            const noteModal = document.getElementById('noteModal');
+            const noteModalTitle = document.getElementById('noteModalTitle');
+            const noteTitle = document.getElementById('noteTitle');
+            const noteText = document.getElementById('noteText');
+            const noteKeyPoints = document.getElementById('noteKeyPoints');
+            const saveNoteBtn = document.getElementById('saveNoteBtn');
+            const fileUpload = document.getElementById('fileUpload');
+            const addFileBtn = document.getElementById('addFileBtn');
+            const fileList = document.getElementById('fileList');
+            
+            // View note modal elements
+            const viewNoteModal = document.getElementById('viewNoteModal');
+            const viewNoteTitle = document.getElementById('viewNoteTitle');
+            const viewSessionInfo = document.getElementById('viewSessionInfo');
+            const viewNoteTitleDisplay = document.getElementById('viewNoteTitleDisplay');
+            const viewNoteTextDisplay = document.getElementById('viewNoteTextDisplay');
+            const viewNoteKeyPointsDisplay = document.getElementById('viewNoteKeyPointsDisplay');
+            const editNoteBtn = document.getElementById('editNoteBtn');
+            const deleteNoteBtn = document.getElementById('deleteNoteBtn');
+            const viewFileList = document.getElementById('viewFileList');
+
+            // Current date and viewed month/year for calendar
+            let today = new Date();
+            let currentMonth = today.getMonth();
+            let currentYear = today.getFullYear();
+            
+            // Current session and note being edited/viewed
+            let currentSessionId = null;
+            let currentNoteId = null;
+
+            // Function to save a study session
+            function saveStudySession(session) {
+                const sessions = JSON.parse(storage.getItem('studySessions')) || [];
+                sessions.push(session);
+                storage.setItem('studySessions', JSON.stringify(sessions));
+            }
+
+            // Function to update a study session
+            function updateStudySession(updatedSession) {
+                let sessions = getStudySessions();
+                const index = sessions.findIndex(session => session.id === updatedSession.id);
+                if (index !== -1) {
+                    sessions[index] = updatedSession;
+                    storage.setItem('studySessions', JSON.stringify(sessions));
+                }
+            }
+
+            // Function to get all study sessions
+            function getStudySessions() {
+                return JSON.parse(storage.getItem('studySessions')) || [];
+            }
+
+            // Function to get a single study session by ID
+            function getStudySession(id) {
+                const sessions = getStudySessions();
+                return sessions.find(session => session.id === id);
+            }
+
+            // Function to delete a study session
+            function deleteStudySession(id) {
+                let sessions = getStudySessions();
+                sessions = sessions.filter(session => session.id !== id);
+                storage.setItem('studySessions', JSON.stringify(sessions));
+                
+                // Also delete all notes associated with this session
+                let notes = getStudyNotes();
+                const notesToDelete = notes.filter(note => note.sessionId === id);
+                
+                // Delete associated materials
+                notesToDelete.forEach(note => {
+                    deleteStudyMaterials(note.id);
+                });
+                
+                // Delete the notes
+                notes = notes.filter(note => note.sessionId !== id);
+                storage.setItem('studyNotes', JSON.stringify(notes));
+                
+                renderSessionsList();
+                renderNotesList();
+                renderSubjectsList();
+                renderCalendar(currentMonth, currentYear);
+            }
+
+            // Function to save a study note
+            function saveStudyNote(note) {
+                const notes = JSON.parse(storage.getItem('studyNotes')) || [];
+                
+                // Check if this is an update to an existing note
+                const existingIndex = notes.findIndex(n => n.id === note.id);
+                
+                if (existingIndex !== -1) {
+                    // Update existing note
+                    notes[existingIndex] = note;
+                } else {
+                    // Add new note
+                    notes.push(note);
+                }
+                
+                storage.setItem('studyNotes', JSON.stringify(notes));
+            }
+
+            // Function to get all study notes
+            function getStudyNotes() {
+                return JSON.parse(storage.getItem('studyNotes')) || [];
+            }
+
+            // Function to get notes for a specific session
+            function getSessionNotes(sessionId) {
+                const notes = getStudyNotes();
+                return notes.filter(note => note.sessionId === sessionId);
+            }
+
+            // Function to get a single study note by ID
+            function getStudyNote(id) {
+                const notes = getStudyNotes();
+                return notes.find(note => note.id === id);
+            }
+
+            // Function to delete a study note
+            function deleteStudyNote(id) {
+                let notes = getStudyNotes();
+                notes = notes.filter(note => note.id !== id);
+                storage.setItem('studyNotes', JSON.stringify(notes));
+                
+                // Also delete associated materials
+                deleteStudyMaterials(id);
+                
+                renderNotesList();
+                renderSubjectsList();
+            }
+
+            // Function to save study materials (file metadata)
+            function saveStudyMaterial(material) {
+                const materials = JSON.parse(storage.getItem('studyMaterials')) || [];
+                materials.push(material);
+                storage.setItem('studyMaterials', JSON.stringify(materials));
+            }
+
+            // Function to get all materials for a note
+            function getNoteMaterials(noteId) {
+                const materials = JSON.parse(storage.getItem('studyMaterials')) || [];
+                return materials.filter(material => material.noteId === noteId);
+            }
+
+            // Function to delete all materials for a note
+            function deleteStudyMaterials(noteId) {
+                let materials = JSON.parse(storage.getItem('studyMaterials')) || [];
+                materials = materials.filter(material => material.noteId !== noteId);
+                storage.setItem('studyMaterials', JSON.stringify(materials));
+            }
+
+            // Function to delete a single material
+            function deleteStudyMaterial(materialId) {
+                let materials = JSON.parse(storage.getItem('studyMaterials')) || [];
+                materials = materials.filter(material => material.id !== materialId);
+                storage.setItem('studyMaterials', JSON.stringify(materials));
+            }
+
+            // Function to format date for display
+            function formatDate(dateString) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString(undefined, options);
+            }
+
+            // Function to format time for display
+            function formatTime(timeString) {
+                return timeString;
+            }
+
+            // Function to open the note modal for a session
+            function openNoteModal(sessionId) {
+                currentSessionId = sessionId;
+                const session = getStudySession(sessionId);
+                
+                if (session) {
+                    noteModalTitle.textContent = `Study Notes: ${session.title}`;
+                    
+                    // Check if there's an existing note for this session
+                    const notes = getSessionNotes(sessionId);
+                    
+                    if (notes.length > 0) {
+                        // Load the first note (assuming one note per session for simplicity)
+                        const note = notes[0];
+                        currentNoteId = note.id;
+                        noteTitle.value = note.title;
+                        noteText.value = note.content;
+                        noteKeyPoints.value = note.keyPoints || '';
+                        
+                        // Load materials
+                        renderMaterialsList(note.id);
+                    } else {
+                        // Create a new note
+                        currentNoteId = Date.now().toString();
+                        noteTitle.value = session.title;
+                        noteText.value = '';
+                        noteKeyPoints.value = '';
+                        
+                        // Clear materials list
+                        fileList.innerHTML = '<p>No materials attached yet.</p>';
+                    }
+                    
+                    // Show the first tab
+                    document.querySelectorAll('#noteModal .tab').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    document.querySelectorAll('#noteModal .tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.querySelector('#noteModal .tab[data-tab="note-content"]').classList.add('active');
+                    document.getElementById('note-content').classList.add('active');
+                    
+                    noteModal.style.display = 'block';
+                }
+            }
+
+            // Function to open the view note modal
+            function openViewNoteModal(noteId) {
+                const note = getStudyNote(noteId);
+                
+                if (note) {
+                    currentNoteId = noteId;
+                    const session = getStudySession(note.sessionId);
+                    
+                    viewNoteTitle.textContent = `View Note: ${note.title}`;
+                    viewNoteTitleDisplay.textContent = note.title;
+                    viewNoteTextDisplay.textContent = note.content;
+                    viewNoteKeyPointsDisplay.textContent = note.keyPoints || 'No key points recorded';
+                    
+                    if (session) {
+                        viewSessionInfo.innerHTML = `
+                            <p><strong>Session:</strong> ${session.title}</p>
+                            <p><strong>Date:</strong> ${formatDate(session.date)}</p>
+                            <p><strong>Time:</strong> ${formatTime(session.time)}</p>
+                        `;
+                    }
+                    
+                    // Load materials
+                    renderViewMaterialsList(noteId);
+                    
+                    // Show the first tab
+                    document.querySelectorAll('#viewNoteModal .tab').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    document.querySelectorAll('#viewNoteModal .tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.querySelector('#viewNoteModal .tab[data-tab="view-note-content"]').classList.add('active');
+                    document.getElementById('view-note-content').classList.add('active');
+                    
+                    viewNoteModal.style.display = 'block';
+                }
+            }
+
+            // Function to render the materials list in the note modal
+            function renderMaterialsList(noteId) {
+                const materials = getNoteMaterials(noteId);
+                
+                if (materials.length === 0) {
+                    fileList.innerHTML = '<p>No materials attached yet.</p>';
+                    return;
+                }
+                
+                fileList.innerHTML = '';
+                materials.forEach(material => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <span>${material.name}</span>
+                        <div class="file-actions">
+                            <button class="delete-material-btn" data-id="${material.id}">Remove</button>
+                        </div>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+                
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-material-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const materialId = this.getAttribute('data-id');
+                        deleteStudyMaterial(materialId);
+                        renderMaterialsList(noteId);
+                    });
+                });
+            }
+
+            // Function to render the materials list in the view note modal
+            function renderViewMaterialsList(noteId) {
+                const materials = getNoteMaterials(noteId);
+                
+                if (materials.length === 0) {
+                    viewFileList.innerHTML = '<p>No materials attached to this note.</p>';
+                    return;
+                }
+                
+                viewFileList.innerHTML = '';
+                materials.forEach(material => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <span>${material.name}</span>
+                        <div class="file-actions">
+                            <button class="view-material-btn" data-id="${material.id}">View</button>
+                        </div>
+                    `;
+                    viewFileList.appendChild(fileItem);
+                });
+            }
+
+            // Function to render the sessions list
+            function renderSessionsList() {
+                const sessions = getStudySessions();
+                
+                // Sort sessions by date and time
+                sessions.sort((a, b) => {
+                    const dateA = new Date(`${a.date}T${a.time}`);
+                    const dateB = new Date(`${b.date}T${b.time}`);
+                    return dateA - dateB;
+                });
+
+                // Filter to show only upcoming sessions
+                const now = new Date();
+                const upcomingSessions = sessions.filter(session => {
+                    const sessionDate = new Date(`${session.date}T${session.time}`);
+                    return sessionDate >= now;
+                });
+
+                sessionsList.innerHTML = '';
+                
+                if (upcomingSessions.length === 0) {
+                    sessionsList.innerHTML = '<p>No upcoming study sessions. Add one to get started!</p>';
+                    return;
+                }
+
+                upcomingSessions.forEach(session => {
+                    const sessionDate = new Date(`${session.date}T${session.time}`);
+                    const sessionItem = document.createElement('div');
+                    sessionItem.className = 'session-item';
+                    
+                    // Check if there are notes for this session
+                    const hasNotes = getSessionNotes(session.id).length > 0;
+                    const notesIndicator = hasNotes ? '<span class="has-notes-indicator" title="Has notes"></span>' : '';
+                    
+                    sessionItem.innerHTML = `
+                        <h3>${session.title} ${notesIndicator}</h3>
+                        <p><strong>Date:</strong> ${formatDate(session.date)}</p>
+                        <p><strong>Time:</strong> ${formatTime(session.time)}</p>
+                        <p><strong>Duration:</strong> ${session.duration} minutes</p>
+                        <p>${session.description || 'No description'}</p>
+                        <div class="session-actions">
+                            <button class="take-notes-btn" data-id="${session.id}">Take Notes</button>
+                            <button class="edit-session-btn" data-id="${session.id}">Edit</button>
+                            <button class="delete-session-btn delete-btn" data-id="${session.id}">Delete</button>
+                        </div>
+                    `;
+                    sessionsList.appendChild(sessionItem);
+                });
+                
+                // Add event listeners to session buttons
+                document.querySelectorAll('.take-notes-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const sessionId = this.getAttribute('data-id');
+                        openNoteModal(sessionId);
+                    });
+                });
+                
+                document.querySelectorAll('.edit-session-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const sessionId = this.getAttribute('data-id');
+                        editSession(sessionId);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-session-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const sessionId = this.getAttribute('data-id');
+                        if (confirm('Are you sure you want to delete this study session? This will also delete any associated notes.')) {
+                            deleteStudySession(sessionId);
+                        }
+                    });
+                });
+            }
+
+            // Function to edit a session
+            function editSession(sessionId) {
+                const session = getStudySession(sessionId);
+                
+                if (session) {
+                    // Fill form with session data
+                    document.getElementById('title').value = session.title;
+                    document.getElementById('date').value = session.date;
+                    document.getElementById('time').value = session.time;
+                    document.getElementById('duration').value = session.duration;
+                    document.getElementById('description').value = session.description || '';
+                    
+                    // Change form submit behavior to update instead of add
+                    studyForm.setAttribute('data-edit-id', sessionId);
+                    document.querySelector('#studyForm button[type="submit"]').textContent = 'Update Session';
+                }
+            }
+
+            // Function to render notes list
+            function renderNotesList() {
+                const notes = getStudyNotes();
+                
+                // Sort notes by date created, newest first
+                notes.sort((a, b) => b.createdAt - a.createdAt);
+
+                notesList.innerHTML = '';
+                
+                if (notes.length === 0) {
+                    notesList.innerHTML = '<p>No study notes yet. Take notes during your study sessions!</p>';
+                    return;
+                }
+
+                notes.forEach(note => {
+                    const session = getStudySession(note.sessionId);
+                    const noteItem = document.createElement('div');
+                    noteItem.className = 'note-item';
+                    
+                    let sessionInfo = 'Session no longer exists';
+                    if (session) {
+                        sessionInfo = `${session.title} (${formatDate(session.date)})`;
+                    }
+                    
+                    noteItem.innerHTML = `
+                        <h3>${note.title}</h3>
+                        <p><strong>Session:</strong> ${sessionInfo}</p>
+                        <p>${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</p>
+                        <div class="note-actions">
+                            <button class="view-note-btn" data-id="${note.id}">View</button>
+                        </div>
+                    `;
+                    notesList.appendChild(noteItem);
+                });
+                
+                // Add event listeners to note buttons
+                document.querySelectorAll('.view-note-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const noteId = this.getAttribute('data-id');
+                        openViewNoteModal(noteId);
+                    });
+                });
+            }
+
+            // Function to render subjects list
+            function renderSubjectsList() {
+                const notes = getStudyNotes();
+                
+                // Group notes by subject (using session title as subject)
+                const subjects = {};
+                
+                notes.forEach(note => {
+                    const session = getStudySession(note.sessionId);
+                    if (session) {
+                        const subject = session.title.split(':')[0].trim(); // Extract subject from title
+                        
+                        if (!subjects[subject]) {
+                            subjects[subject] = [];
+                        }
+                        
+                        subjects[subject].push(note);
+                    }
+                });
+                
+                subjectsList.innerHTML = '';
+                
+                if (Object.keys(subjects).length === 0) {
+                    subjectsList.innerHTML = '<p>No subjects found. Create notes to organize them by subject.</p>';
+                    return;
+                }
+                
+                // Sort subjects alphabetically
+                const sortedSubjects = Object.keys(subjects).sort();
+                
+                sortedSubjects.forEach(subject => {
+                    const subjectItem = document.createElement('div');
+                    subjectItem.className = 'note-item';
+                    
+                    const noteCount = subjects[subject].length;
+                    
+                    subjectItem.innerHTML = `
+                        <h3>${subject}</h3>
+                        <p>${noteCount} note${noteCount !== 1 ? 's' : ''}</p>
+                        <div class="subject-notes" style="display: none;">
+                            ${subjects[subject].map(note => `
+                                <div class="subject-note">
+                                    <p><strong>${note.title}</strong></p>
+                                    <button class="view-note-btn" data-id="${note.id}">View</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="note-actions">
+                            <button class="toggle-subject-btn">Show Notes</button>
+                        </div>
+                    `;
+                    subjectsList.appendChild(subjectItem);
+                });
+                
+                // Add event listeners to toggle subject notes
+                document.querySelectorAll('.toggle-subject-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const subjectNotes = this.parentElement.parentElement.querySelector('.subject-notes');
+                        const isHidden = subjectNotes.style.display === 'none';
+                        
+                        subjectNotes.style.display = isHidden ? 'block' : 'none';
+                        this.textContent = isHidden ? 'Hide Notes' : 'Show Notes';
+                    });
+                });
+                
+                // Add event listeners to view note buttons
+                document.querySelectorAll('.subject-notes .view-note-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const noteId = this.getAttribute('data-id');
+                        openViewNoteModal(noteId);
+                    });
+                });
+            }
+
+            // Function to render the calendar
+            function renderCalendar(month, year) {
+                // Get first day of month and number of days in month
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                // Update current month display
+                currentMonthDiv.textContent = new Date(year, month).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+                
+                // Create calendar table
+                let calendarHTML = `
+                    <table class="calendar">
+                        <thead>
+                            <tr>
+                                <th>Sun</th>
+                                <th>Mon</th>
+                                <th>Tue</th>
+                                <th>Wed</th>
+                                <th>Thu</th>
+                                <th>Fri</th>
+                                <th>Sat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                // Create calendar days
+                let date = 1;
+                for (let i = 0; i < 6; i++) {
+                    calendarHTML += '<tr>';
+                    
+                    for (let j = 0; j < 7; j++) {
+                        if (i === 0 && j < firstDay) {
+                            // Empty cells before first day of month
+                            calendarHTML += '<td></td>';
+                        } else if (date > daysInMonth) {
+                            // Empty cells after last day of month
+                            calendarHTML += '<td></td>';
+                        } else {
+                            // Format date string for comparison
+                            const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${date.toString().padStart(2, '0')}`;
+                            
+                            // Check if this is today
+                            const isToday = date === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+                            
+                            // Get sessions for this date
+                            const sessions = getStudySessions().filter(session => session.date === dateStr);
+                            
+                            // Generate HTML for events
+                            let eventsHTML = '';
+                            sessions.forEach(session => {
+                                eventsHTML += `<div class="event" data-id="${session.id}">${session.title}</div>`;
+                            });
+                            
+                            // Add day cell with events
+                            calendarHTML += `
+                                <td class="${isToday ? 'today' : ''}" data-date="${dateStr}">
+                                    <div class="day-number">${date}</div>
+                                    ${eventsHTML}
+                                </td>
+                            `;
+                            
+                            date++;
+                        }
+                    }
+                    
+                    calendarHTML += '</tr>';
+                    
+                    // Stop if we've gone through all days
+                    if (date > daysInMonth) {
+                        break;
+                    }
+                }
+                
+                calendarHTML += '</tbody></table>';
+                calendarDiv.innerHTML = calendarHTML;
+                
+                // Add event listeners to calendar events
+                document.querySelectorAll('.calendar .event').forEach(event => {
+                    event.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const sessionId = this.getAttribute('data-id');
+                        openSessionDetails(sessionId);
+                    });
+                });
+                
+                // Add event listeners to calendar days
+                document.querySelectorAll('.calendar td[data-date]').forEach(day => {
+                    day.addEventListener('click', function() {
+                        const dateStr = this.getAttribute('data-date');
+                        document.getElementById('date').value = dateStr;
+                    });
+                });
+            }
+
+            // Function to open session details
+            function openSessionDetails(sessionId) {
+                const session = getStudySession(sessionId);
+                
+                if (session) {
+                    if (confirm(`${session.title}\nDate: ${formatDate(session.date)}\nTime: ${formatTime(session.time)}\nDuration: ${session.duration} minutes\n\nWould you like to take notes for this session?`)) {
+                        openNoteModal(sessionId);
+                    }
+                }
+            }
+
+            // Function to check for upcoming sessions and show notifications
+            function checkUpcomingSessions() {
+                const sessions = getStudySessions();
+                const now = new Date();
+                
+                // Check for sessions starting in the next 15 minutes
+                sessions.forEach(session => {
+                    const sessionDate = new Date(`${session.date}T${session.time}`);
+                    const timeDiff = sessionDate - now;
+                    
+                    // If session is starting in the next 15 minutes (but not in the past)
+                    if (timeDiff > 0 && timeDiff <= 15 * 60 * 1000) {
+                        showNotification(session);
+                    }
+                });
+            }
+
+            // Function to show notification
+            function showNotification(session) {
+                // Browser notification
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Study Session Reminder', {
+                        body: `${session.title} - Starting in ${Math.round((new Date(`${session.date}T${session.time}`) - new Date()) / 60000)} minutes`,
+                        icon: 'https://example.com/icon.png'
+                    });
+                }
+                
+                // In-app notification
+                notificationTitle.textContent = 'Study Time!';
+                notificationMessage.textContent = `${session.title} is starting soon. Get ready to study!`;
+                notification.style.display = 'block';
+                
+                // Store session ID for the start timer button
+                startTimerBtn.setAttribute('data-id', session.id);
+            }
+
+            // Function to start a study timer
+            function startStudyTimer(sessionId) {
+                const session = getStudySession(sessionId);
+                
+                if (session) {
+                    // This is a simplified timer - in a real app, you'd want to show a countdown
+                    alert(`Study timer started for ${session.title}. Duration: ${session.duration} minutes.`);
+                    
+                    // Play sound
+                    const audio = document.getElementById('alarmSound');
+                    audio.play();
+                    
+                    // Hide notification
+                    notification.style.display = 'none';
+                }
+            }
+
+            // Add event listener for study form submission
+            studyForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const title = document.getElementById('title').value;
+                const date = document.getElementById('date').value;
+                const time = document.getElementById('time').value;
+                const duration = document.getElementById('duration').value;
+                const description = document.getElementById('description').value;
+                
+                // Check if this is an edit or a new session
+                const editId = this.getAttribute('data-edit-id');
+                
+                if (editId) {
+                    // Update existing session
+                    const updatedSession = {
+                        id: editId,
+                        title,
+                        date,
+                        time,
+                        duration,
+                        description
+                    };
+                    
+                    updateStudySession(updatedSession);
+                    
+                    // Reset form
+                    this.removeAttribute('data-edit-id');
+                    document.querySelector('#studyForm button[type="submit"]').textContent = 'Add Session';
+                } else {
+                    // Create new session
+                    const newSession = {
+                        id: Date.now().toString(),
+                        title,
+                        date,
+                        time,
+                        duration,
+                        description
+                    };
+                    
+                    saveStudySession(newSession);
+                }
+                
+                // Clear form
+                this.reset();
+                
+                // Update displays
+                renderSessionsList();
+                renderCalendar(currentMonth, currentYear);
+            });
+
+            // Add event listener for save note button
+            saveNoteBtn.addEventListener('click', function() {
+                if (!currentSessionId) return;
+                
+                const title = noteTitle.value.trim();
+                const content = noteText.value.trim();
+                const keyPoints = noteKeyPoints.value.trim();
+                
+                if (!title || !content) {
+                    alert('Please enter a title and notes content');
+                    return;
+                }
+                
+                const note = {
+                    id: currentNoteId,
+                    sessionId: currentSessionId,
+                    title,
+                    content,
+                    keyPoints,
+                    createdAt: Date.now()
+                };
+                
+                saveStudyNote(note);
+                
+                // Close modal
+                noteModal.style.display = 'none';
+                
+                // Update displays
+                renderSessionsList();
+                renderNotesList();
+                renderSubjectsList();
+                renderCalendar(currentMonth, currentYear);
+            });
+
+            // Add event listener for add file button
+            addFileBtn.addEventListener('click', function() {
+                fileUpload.click();
+            });
+
+            // Add event listener for file upload
+            fileUpload.addEventListener('change', function() {
+                if (!this.files || !this.files.length || !currentNoteId) return;
+                
+                // Process each file
+                Array.from(this.files).forEach(file => {
+                    const material = {
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        noteId: currentNoteId,
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        // In a real app, you'd upload the file to a server or store it in IndexedDB
+                        // Here we just store metadata
+                        uploadDate: Date.now()
+                    };
+                    
+                    saveStudyMaterial(material);
+                });
+                
+                // Clear file input
+                this.value = '';
+                
+                // Update materials list
+                renderMaterialsList(currentNoteId);
+            });
+
+            // Add event listener for calendar navigation
+            prevMonthBtn.addEventListener('click', function() {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar(currentMonth, currentYear);
+            });
+
+            nextMonthBtn.addEventListener('click', function() {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar(currentMonth, currentYear);
+            });
+
+            // Add event listener for notification dismiss button
+            dismissBtn.addEventListener('click', function() {
+                notification.style.display = 'none';
+            });
+
+            // Add event listener for notification start timer button
+            startTimerBtn.addEventListener('click', function() {
+                const sessionId = this.getAttribute('data-id');
+                startStudyTimer(sessionId);
+            });
+
+            // Add event listener for edit note button
+            editNoteBtn.addEventListener('click', function() {
+                const noteId = currentNoteId;
+                const note = getStudyNote(noteId);
+                
+                if (note) {
+                    // Set up note modal for editing
+                    currentSessionId = note.sessionId;
+                    currentNoteId = noteId;
+                    noteModalTitle.textContent = `Edit Note: ${note.title}`;
+                    noteTitle.value = note.title;
+                    noteText.value = note.content;
+                    noteKeyPoints.value = note.keyPoints || '';
+                    
+                    // Load materials
+                    renderMaterialsList(noteId);
+                    
+                    // Hide view modal and show edit modal
+                    viewNoteModal.style.display = 'none';
+                    noteModal.style.display = 'block';
+                    
+                    // Show the first tab
+                    document.querySelectorAll('#noteModal .tab').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    document.querySelectorAll('#noteModal .tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.querySelector('#noteModal .tab[data-tab="note-content"]').classList.add('active');
+                    document.getElementById('note-content').classList.add('active');
+                }
+            });
+
+            // Add event listener for delete note button
+            deleteNoteBtn.addEventListener('click', function() {
+                const noteId = currentNoteId;
+                
+                if (confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
+                    deleteStudyNote(noteId);
+                    viewNoteModal.style.display = 'none';
+                }
+            });
+
+            // Close modals when clicking on the 'X'
+            document.querySelectorAll('.close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', function() {
+                    noteModal.style.display = 'none';
+                    viewNoteModal.style.display = 'none';
+                });
+            });
+
+            // Close modals when clicking outside the content
+            window.addEventListener('click', function(event) {
+                if (event.target === noteModal) {
+                    noteModal.style.display = 'none';
+                }
+                if (event.target === viewNoteModal) {
+                    viewNoteModal.style.display = 'none';
+                }
+            });
+
+            // Tab switching in modals
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    const tabsContainer = this.parentElement;
+                    
+                    // Get all tabs and contents in this container
+                    const tabs = tabsContainer.querySelectorAll('.tab');
+                    const contents = tabsContainer.parentElement.querySelectorAll('.tab-content');
+                    
+                    // Deactivate all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+                    
+                    // Activate clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(tabName).classList.add('active');
+                });
+            });
+
+            // Initial setup
+            renderSessionsList();
+            renderNotesList();
+            renderSubjectsList();
+            renderCalendar(currentMonth, currentYear);
+
+            // Check for upcoming sessions every minute
+            setInterval(checkUpcomingSessions, 60000);
+            // Initial check
+            checkUpcomingSessions();
+        }
+    </script>
+</body>
+</html>

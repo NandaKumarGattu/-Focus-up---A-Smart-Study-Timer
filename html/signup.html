@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Authentication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            outline: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 15px;
+            top: -10px;
+            background: white;
+            padding: 0 5px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .toggle {
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .toggle:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            min-height: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .success {
+            color: #2ecc71;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            user-select: none;
+        }
+
+        /* Animation for form switching */
+        .form-container {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .form-container.hidden {
+            opacity: 0;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="signup-form" class="form-container">
+            <h2>Create Account</h2>
+            <div class="input-group">
+                <label for="signup-username">Username</label>
+                <input type="text" id="signup-username" required>
+            </div>
+            <div class="input-group">
+                <label for="signup-email">Email</label>
+                <input type="email" id="signup-email" required>
+            </div>
+            <div class="input-group">
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" required>
+                <span class="password-toggle" onclick="togglePassword('signup-password', this)">👁️</span>
+            </div>
+            <button onclick="signup()">Sign Up</button>
+            <div class="toggle" onclick="toggleForm()">Already have an account? Login</div>
+            <div id="signup-error" class="error"></div>
+        </div>
+
+        <div id="login-form" class="form-container hidden">
+            <h2>Welcome Back</h2>
+            <div class="input-group">
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username" required>
+            </div>
+            <div class="input-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" required>
+                <span class="password-toggle" onclick="togglePassword('login-password', this)">👁️</span>
+            </div>
+            <button onclick="login()">Log In</button>
+            <div class="toggle" onclick="toggleForm()">Need an account? Sign up</div>
+            <div id="login-error" class="error"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleForm() {
+            const signupForm = document.getElementById('signup-form');
+            const loginForm = document.getElementById('login-form');
+            
+            signupForm.classList.toggle('hidden');
+            loginForm.classList.toggle('hidden');
+
+            // Clear errors when switching forms
+            document.getElementById('signup-error').textContent = '';
+            document.getElementById('login-error').textContent = '';
+            
+            // Clear input fields
+            document.querySelectorAll('input').forEach(input => input.value = '');
+        }
+
+        function togglePassword(inputId, toggleBtn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggleBtn.textContent = '🔒';
+            } else {
+                input.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        }
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function showError(elementId, message, isSuccess = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = isSuccess ? 'error success' : 'error';
+        }
+
+        function signup() {
+            const username = document.getElementById('signup-username').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+
+            // Validation
+            if (!username || !email || !password) {
+                showError('signup-error', 'Please fill in all fields');
+                return;
+            }
+
+            if (username.length < 3) {
+                showError('signup-error', 'Username must be at least 3 characters');
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showError('signup-error', 'Please enter a valid email address');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('signup-error', 'Password must be at least 6 characters');
+                return;
+            }
+
+            // Store user data in localStorage
+            localStorage.setItem('username', username);
+            localStorage.setItem('email', email);
+            localStorage.setItem('password', password);
+
+            showError('signup-error', 'Account created successfully! Redirecting...', true);
+            setTimeout(() => {
+                toggleForm();
+            }, 1500);
+        }
+
+        function login() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!username || !password) {
+                showError('login-error', 'Please fill in all fields');
+                return;
+            }
+
+            const storedUsername = localStorage.getItem('username');
+            const storedPassword = localStorage.getItem('password');
+
+            if (username === storedUsername && password === storedPassword) {
+                showError('login-error', 'Login successful! Redirecting...', true);
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1500);
+            } else {
+                showError('login-error', 'Invalid username or password');
+            }
+        }
+
+        // Add keyboard support
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const loginForm = document.getElementById('login-form');
+                if (!loginForm.classList.contains('hidden')) {
+                    login();
+                } else {
+                    signup();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

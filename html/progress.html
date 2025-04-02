@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Progress - FocusUP</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #3B82F6;
+            --secondary-color: #10B981;
+            --bg-color: #F4F7F6;
+        }
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        .icon-gradient {
+            background: linear-gradient(135deg, #6B46C1, #3182CE);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <!-- Same Header as main page -->
+    <header class="sticky top-0 z-50 gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="ri-book-2-line text-3xl icon-gradient"></i>
+                <span class="text-2xl font-bold">FocusUP</span>
+            </div>
+            <nav>
+                <ul class="flex space-x-6 items-center">
+                    <li><a href="home.html" class="hover:text-blue-200 transition flex items-center space-x-1">
+                        <i class="ri-home-4-line"></i>
+                        <span>Home</span>
+                    </a></li>
+                    <li><a href="subjects.html" class="hover:text-blue-200 transition flex items-center space-x-1">
+                        <i class="ri-book-open-line"></i>
+                        <span>Subjects</span>
+                    </a></li>
+                    <li><a href="exams.html" class="hover:text-blue-200 transition flex items-center space-x-1">
+                        <i class="ri-calendar-event-line"></i>
+                        <span>Exams</span>
+                    </a></li>
+                    <li><a href="progress.html" class="hover:text-blue-200 transition flex items-center space-x-1">
+                        <i class="ri-line-chart-line"></i>
+                        <span>Progress</span>
+                    </a></li>
+                    <li><a href="signup.html" class="bg-green-500 px-4 py-2 rounded-full hover:bg-green-600 transition flex items-center space-x-1">
+                        <i class="ri-user-line"></i>
+                        <span>Login/Signup</span>
+                    </a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Progress Content -->
+    <div class="container mx-auto mt-10 px-4">
+        <h2 class="text-4xl font-extrabold mb-8 text-gray-800 text-center">Study Progress</h2>
+        
+        <!-- Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-gray-500 text-sm">Total Study Time</h3>
+                    <i class="ri-time-line text-blue-500 text-xl"></i>
+                </div>
+                <p class="text-2xl font-bold text-gray-800 mt-2" id="totalStudyTime">24.5 hours</p>
+                <p class="text-green-500 text-sm mt-2">↑ 12% from last week</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-gray-500 text-sm">Subjects Covered</h3>
+                    <i class="ri-book-open-line text-purple-500 text-xl"></i>
+                </div>
+                <p class="text-2xl font-bold text-gray-800 mt-2">4</p>
+                <p class="text-green-500 text-sm mt-2">+1 new this week</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-gray-500 text-sm">Study Streak</h3>
+                    <i class="ri-fire-line text-orange-500 text-xl"></i>
+                </div>
+                <p class="text-2xl font-bold text-gray-800 mt-2">5 days</p>
+                <p class="text-green-500 text-sm mt-2">Keep it up!</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-gray-500 text-sm">Focus Score</h3>
+                    <i class="ri-focus-2-line text-green-500 text-xl"></i>
+                </div>
+                <p class="text-2xl font-bold text-gray-800 mt-2">85%</p>
+                <p class="text-green-500 text-sm mt-2">↑ 5% from last week</p>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Study Time by Subject -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">Study Time by Subject</h3>
+                <canvas id="subjectChart"></canvas>
+            </div>
+
+            <!-- Weekly Progress -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">Weekly Progress</h3>
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold mb-4">Recent Activity</h3>
+            <div class="space-y-4" id="recentActivity">
+                <div class="flex items-center justify-between border-b pb-4">
+                    <div class="flex items-center space-x-3">
+                        <i class="ri-book-mark-line text-blue-500"></i>
+                        <div>
+                            <p class="font-medium">Mathematics Study Session</p>
+                            <p class="text-sm text-gray-500">45 minutes</p>
+                        </div>
+                    </div>
+                    <span class="text-sm text-gray-500">2 hours ago</span>
+                </div>
+                <div class="flex items-center justify-between border-b pb-4">
+                    <div class="flex items-center space-x-3">
+                        <i class="ri-flask-line text-purple-500"></i>
+                        <div>
+                            <p class="font-medium">Biology Study Session</p>
+                            <p class="text-sm text-gray-500">1 hour</p>
+                        </div>
+                    </div>
+                    <span class="text-sm text-gray-500">Yesterday</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i class="ri-microscope-line text-green-500"></i>
+                        <div>
+                            <p class="font-medium">Science Study Session</p>
+                            <p class="text-sm text-gray-500">30 minutes</p>
+                        </div>
+                    </div>
+                    <span class="text-sm text-gray-500">Yesterday</span>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        // Initialize charts
+        const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+        const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+        let subjectChart, weeklyChart;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize subject chart
+            subjectChart = new Chart(subjectCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mathematics', 'Biology', 'Science', 'Other'],
+                    datasets: [{
+                        data: [0, 0, 0, 0], // Start with empty data
+                        backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Initialize weekly chart
+            weeklyChart = new Chart(weeklyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Study Hours',
+                        data: [0, 0, 0, 0, 0, 0, 0], // Start with empty data
+                        borderColor: '#3B82F6',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Update all progress data
+            updateProgressPage();
+        });
+
+        // Subject Time Distribution Chart
+        new Chart(subjectCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Mathematics', 'Biology', 'Science', 'Other'],
+                datasets: [{
+                    data: [8, 6, 4, 2],
+                    backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Weekly Progress Chart
+        new Chart(weeklyCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Study Hours',
+                    data: [2, 4, 3, 5, 4, 3, 3.5],
+                    borderColor: '#3B82F6',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+         // Add this to progress.html to update charts and recent activity
+         function updateProgressPage() {
+            // Update total study time card
+            const totalTime = Object.values(StudyTracker.getTotalTimeBySubject())
+                .reduce((a, b) => a + b, 0) / 60; // Convert to hours
+            document.querySelector('#totalStudyTime').textContent = 
+                `${totalTime.toFixed(1)} hours`;
+
+            // Update recent activity
+            const recentSessions = StudyTracker.getRecentSessions();
+            const activityContainer = document.querySelector('#recentActivity');
+            activityContainer.innerHTML = recentSessions.map(session => `
+                <div class="flex items-center justify-between border-b pb-4">
+                    <div class="flex items-center space-x-3">
+                        <i class="ri-book-mark-line text-blue-500"></i>
+                        <div>
+                            <p class="font-medium">${session.subject} Study Session</p>
+                            <p class="text-sm text-gray-500">${session.duration} minutes</p>
+                        </div>
+                    </div>
+                    <span class="text-sm text-gray-500">${getTimeAgo(session.timestamp)}</span>
+                </div>
+            `).join('');
+
+            // Update subject chart
+            const totalTimeBySubject = StudyTracker.getTotalTimeBySubject();
+            subjectChart.data.datasets[0].data = Object.values(totalTimeBySubject);
+            subjectChart.update();
+
+            // Update weekly progress chart
+            const weeklyProgress = StudyTracker.getWeeklyProgress();
+            weeklyChart.data.labels = weeklyProgress.labels;
+            weeklyChart.data.datasets[0].data = weeklyProgress.data;
+            weeklyChart.update();
+        }
+
+        // Helper function to format time ago
+        function getTimeAgo(timestamp) {
+            const minutes = Math.floor((new Date() - new Date(timestamp)) / 60000);
+            if (minutes < 60) return `${minutes} minutes ago`;
+            if (minutes < 1440) return `${Math.floor(minutes/60)} hours ago`;
+            return `${Math.floor(minutes/1440)} days ago`;
+        }
+    </script>
+</body>
+</html>

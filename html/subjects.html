@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyMaster Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3B82F6;
+            --secondary-color: #10B981;
+            --bg-color: #F4F7F6;
+        }
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        .subject-card {
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+        .subject-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        .icon-gradient {
+            background: linear-gradient(135deg, #6B46C1, #3182CE);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .modal {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="ri-book-2-line text-3xl icon-gradient"></i>
+                <span class="text-2xl font-bold">FocusUP</span>
+            </div>
+            <nav>
+                <ul class="flex space-x-6 items-center">
+                    <li><a href="home.html" class="hover:text-blue-200 transition flex items-center space-x-1">
+                        <i class="ri-home-4-line"></i>
+                        <span>Home</span>
+                    </a></li>
+                    <li><a href="timetable-generator/public/index.html" class="hover:text-blue-200 transition flex items-center space-x-1">
+                        <i class="ri-book-open-line"></i>
+                        <span>Timetable</span>
+                    </a></li>
+                    <li><a href="exams.html" class="hover:text-blue-200 transition flex items-center space-x-1">
+                        <i class="ri-calendar-event-line"></i>
+                        <span>Exams</span>
+                    </a></li>
+                    <li><a href="dailyprogress.html" class="bg-green-500 px-4 py-2 rounded-full hover:bg-green-600 transition flex items-center space-x-1">
+                        <i class="ri-user-line"></i>
+                        <span>Your Progress</span>
+                    </a></li>
+                    <li><a href="signup.html" class="bg-green-500 px-4 py-2 rounded-full hover:bg-green-600 transition flex items-center space-x-1">
+                        <i class="ri-user-line"></i>
+                        <span>Login/Signup</span>
+                    </a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Subjects Section -->
+    <div class="container mx-auto mt-10 px-4">
+        <h2 class="text-4xl font-extrabold mb-8 text-gray-800 text-center">10th Grade Study Hub</h2>
+        <div id="subjectGrid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Subject Cards -->
+            <div class="subject-card bg-white rounded-2xl shadow-lg p-6 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 gradient-bg"></div>
+                <i class="ri-flask-line text-6xl mb-4 icon-gradient"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">Biology</h3>
+                <p class="text-gray-600 mb-6">Explore life sciences and living organisms</p>
+                <button onclick="window.location.href='chapters.html?subject=Biology'" class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center space-x-2">
+                    <i class="ri-timer-line"></i>       
+                    <span>Start Study Timer</span>                   
+                </button>
+            </div>
+
+            <div class="subject-card bg-white rounded-2xl shadow-lg p-6 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 gradient-bg"></div>
+                <i class="ri-microscope-line text-6xl mb-4 icon-gradient"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">Science</h3>
+                <p class="text-gray-600 mb-6">Discover the wonders of scientific exploration</p>
+                <button onclick="window.location.href='chapters.html?subject=Science'" class="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition flex items-center justify-center space-x-2">
+                    <i class="ri-timer-line"></i>
+                    <span>Start Study Timer</span>
+                </button>
+            </div>
+
+            <div class="subject-card bg-white rounded-2xl shadow-lg p-6 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 gradient-bg"></div>
+                <i class="ri-calculator-line text-6xl mb-4 icon-gradient"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">Mathematics</h3>
+                <p class="text-gray-600 mb-6">Master numbers, equations, and problem-solving</p>
+                <button onclick="window.location.href='chapters.html?subject=Mathematics'" class="w-full bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition flex items-center justify-center space-x-2">
+                    <i class="ri-timer-line"></i>
+                    <span>Start Study Timer</span>
+                </button>
+            </div>
+
+            <!-- Add New Subject Card -->
+            <div class="subject-card bg-white rounded-2xl shadow-lg p-6 text-center relative overflow-hidden cursor-pointer" onclick="openAddSubjectModal()">
+                <div class="absolute top-0 left-0 w-full h-2 gradient-bg"></div>
+                <i class="ri-add-circle-line text-6xl mb-4 icon-gradient"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">Add New Subject</h3>
+                <p class="text-gray-600 mb-6">Create a custom subject timer</p>
+                <button class="w-full bg-gray-200 text-gray-600 px-6 py-3 rounded-lg hover:bg-gray-300 transition flex items-center justify-center space-x-2">
+                    <i class="ri-add-line"></i>
+                    <span>Add Subject</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div id="addSubjectModal" class="modal fixed inset-0 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 w-full max-w-md">
+            <h3 class="text-2xl font-bold mb-4">Add New Subject</h3>
+            <form id="addSubjectForm" onsubmit="addNewSubject(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="subjectName">
+                        Subject Name
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="subjectName" type="text" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="subjectDescription">
+                        Description
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="subjectDescription" type="text" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="buttonColor">
+                        Button Color
+                    </label>
+                    <select class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="buttonColor">
+                        <option value="blue">Blue</option>
+                        <option value="green">Green</option>
+                        <option value="purple">Purple</option>
+                        <option value="pink">Pink</option>
+                        <option value="indigo">Indigo</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeAddSubjectModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Add Subject
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const subjectGrid = document.getElementById('subjectGrid');
+        const addSubjectModal = document.getElementById('addSubjectModal');
+        const addSubjectForm = document.getElementById('addSubjectForm');
+
+        // Array of icons to cycle through for new subjects
+        const icons = [
+            'ri-book-line',
+            'ri-pencil-ruler-line',
+            'ri-earth-line',
+            'ri-file-list-line',
+            'ri-mind-map',
+            'ri-focus-line'
+        ];
+
+        let iconIndex = 0;
+
+        function openAddSubjectModal() {
+            addSubjectModal.classList.remove('hidden');
+        }
+
+        function closeAddSubjectModal() {
+            addSubjectModal.classList.add('hidden');
+            addSubjectForm.reset();
+        }
+
+        function addNewSubject(event) {
+            event.preventDefault();
+            
+            const subjectName = document.getElementById('subjectName').value;
+            const subjectDescription = document.getElementById('subjectDescription').value;
+            const buttonColor = document.getElementById('buttonColor').value;
+            
+            // Cycle through icons
+            const icon = icons[iconIndex];
+            iconIndex = (iconIndex + 1) % icons.length;
+
+            const newSubjectCard = document.createElement('div');
+            newSubjectCard.className = 'subject-card bg-white rounded-2xl shadow-lg p-6 text-center relative overflow-hidden';
+            newSubjectCard.innerHTML = `
+                <div class="absolute top-0 left-0 w-full h-2 gradient-bg"></div>
+                <i class="${icon} text-6xl mb-4 icon-gradient"></i>
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">${subjectName}</h3>
+                <p class="text-gray-600 mb-6">${subjectDescription}</p>
+                <button onclick="window.location.href='chapters.html?subject=${encodeURIComponent(subjectName)}'" class="w-full bg-${buttonColor}-500 text-white px-6 py-3 rounded-lg hover:bg-${buttonColor}-600 transition flex items-center justify-center space-x-2">
+                    <i class="ri-timer-line"></i>
+                    <span>Start Study Timer</span>
+                </button>
+            `;
+
+            // Insert the new subject card before the "Add New Subject" card
+            const addNewSubjectCard = subjectGrid.lastElementChild;
+            subjectGrid.insertBefore(newSubjectCard, addNewSubjectCard);
+
+            closeAddSubjectModal();
+        }
+
+        // Close modal when clicking outside
+        addSubjectModal.addEventListener('click', function(event) {
+            if (event.target === addSubjectModal) {
+                closeAddSubjectModal();
+            }
+        });
+
+        // Data structure for storing study sessions
+        const StudyTracker = {
+            // Initialize study tracking
+            init() {
+                if (!localStorage.getItem('studySessions')) {
+                    localStorage.setItem('studySessions', JSON.stringify([]));
+                }
+                if (!localStorage.getItem('totalStudyTime')) {
+                    localStorage.setItem('totalStudyTime', JSON.stringify({
+                        Mathematics: 0,
+                        Biology: 0,
+                        Science: 0,
+                        Other: 0
+                    }));
+                }
+            },
+
+            // Save a new study session
+            saveSession(subject, duration) {
+                const sessions = JSON.parse(localStorage.getItem('studySessions'));
+                const totalTime = JSON.parse(localStorage.getItem('totalStudyTime'));
+                
+                // Create new session
+                const session = {
+                    subject,
+                    duration, // in minutes
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Update total time for subject
+                totalTime[subject] = (totalTime[subject] || 0) + duration;
+                
+                // Save updated data
+                sessions.unshift(session); // Add to beginning of array
+                localStorage.setItem('studySessions', JSON.stringify(sessions));
+                localStorage.setItem('totalStudyTime', JSON.stringify(totalTime));
+            },
+
+            // Get recent sessions
+            getRecentSessions(limit = 3) {
+                const sessions = JSON.parse(localStorage.getItem('studySessions'));
+                return sessions.slice(0, limit);
+            },
+
+            // Get total study time by subject
+            getTotalTimeBySubject() {
+                return JSON.parse(localStorage.getItem('totalStudyTime'));
+            },
+
+            // Get weekly progress data
+            getWeeklyProgress() {
+                const sessions = JSON.parse(localStorage.getItem('studySessions'));
+                const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const weeklyData = Array(7).fill(0);
+                
+                const today = new Date();
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                
+                sessions.forEach(session => {
+                    const sessionDate = new Date(session.timestamp);
+                    if (sessionDate >= weekAgo) {
+                        const dayIndex = sessionDate.getDay();
+                        weeklyData[dayIndex] += session.duration / 60; // Convert to hours
+                    }
+                });
+                
+                return {
+                    labels: weekDays,
+                    data: weeklyData
+                };
+            }
+        };
+
+        // Initialize tracker
+        StudyTracker.init();   
+    </script>
+</body>
+</html>

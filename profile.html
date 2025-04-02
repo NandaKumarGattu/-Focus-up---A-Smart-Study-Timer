@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Authentication System</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+
+        .app-description {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .auth-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background: var(--dark-color);
+        }
+
+        .btn-secondary:hover {
+            background: #2c3e50;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .alert-success {
+            background-color: var(--success-color);
+        }
+
+        .alert-error {
+            background-color: var(--danger-color);
+        }
+
+        .user-dashboard {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .user-info {
+            margin-bottom: 30px;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: var(--light-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 32px;
+            color: var(--dark-color);
+        }
+
+        .username {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .email {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .join-date {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        /* New styles for header user info */
+        .header-user-info {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 0;
+            align-items: center;
+            background-color: white;
+            border-radius: 20px;
+            padding: 6px 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        
+        .header-avatar {
+            width: 30px;
+            height: 30px;
+            background-color: var(--light-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--dark-color);
+            margin-right: 8px;
+        }
+        
+        .header-username {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .user-dropdown {
+            position: absolute;
+            right: 0;
+            top: 45px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 10px;
+            display: none;
+            width: 150px;
+            z-index: 100;
+        }
+        
+        .dropdown-item {
+            padding: 8px;
+            display: block;
+            border-radius: 4px;
+            text-decoration: none;
+            color: var(--dark-color);
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--light-color);
+        }
+        
+        .logout-item {
+            color: var(--danger-color);
+            border-top: 1px solid #eee;
+            margin-top: 5px;
+            padding-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 20px auto;
+            }
+            
+            .auth-panel {
+                padding: 20px;
+            }
+            
+            .header-user-info {
+                position: relative;
+                margin-top: 15px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Authentication System</h1>
+            <p class="app-description">Register an account or login to access your dashboard.</p>
+            
+            <!-- New header user info element -->
+            <div class="header-user-info" id="header-user-info">
+                <div class="header-avatar" id="header-avatar"></div>
+                <div class="header-username" id="header-username"></div>
+            </div>
+            
+            <!-- User dropdown menu -->
+            <div class="user-dropdown" id="user-dropdown">
+                <a href="index.html" class="dropdown-item">Home</a>
+                <a href="#" class="dropdown-item">Dashboard</a>
+                <a href="#" class="dropdown-item">Settings</a>
+                <a href="#" class="dropdown-item logout-item" id="dropdown-logout">Logout</a>
+            </div>
+        </header>
+
+        <div id="alert-container"></div>
+
+        <!-- Auth Panel (Login/Register) -->
+        <div class="auth-panel" id="auth-panel">
+            <h2 id="auth-title">Login</h2>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            <div class="form-group" id="email-group" style="display: none;">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            <button class="btn" id="auth-submit-btn">Login</button>
+            <button class="btn btn-secondary" id="auth-toggle-btn">Switch to Register</button>
+        </div>
+
+        <!-- User Dashboard (Hidden by default) -->
+        <div class="user-dashboard" id="user-dashboard" style="display: none;">
+            <div class="user-info">
+                <div class="user-avatar" id="user-avatar"></div>
+                <div class="username" id="user-username"></div>
+                <div class="email" id="user-email"></div>
+                <div class="join-date" id="user-joined"></div>  
+            </div>
+            <a href="index.html"><button class="btn btn-danger" id="home-btn">Home</button></a>
+            <button class="btn btn-danger" id="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Auth state variables
+        let currentUser = null;
+        let token = null;
+        let isLoginMode = true;
+
+        // DOM Elements
+        const authPanel = document.getElementById('auth-panel');
+        const userDashboard = document.getElementById('user-dashboard');
+        const authTitle = document.getElementById('auth-title');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+        const authToggleBtn = document.getElementById('auth-toggle-btn');
+        const emailGroup = document.getElementById('email-group');
+        const logoutBtn = document.getElementById('logout-btn');
+        const homeBtn = document.getElementById('home-btn');
+        const alertContainer = document.getElementById('alert-container');
+        const headerUserInfo = document.getElementById('header-user-info');
+        const headerAvatar = document.getElementById('header-avatar');
+        const headerUsername = document.getElementById('header-username');
+        const userDropdown = document.getElementById('user-dropdown');
+        const dropdownLogout = document.getElementById('dropdown-logout');
+
+        // Show alert message
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            
+            // Auto-dismiss alert after 5 seconds
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Toggle between login and register forms
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            
+            if (isLoginMode) {
+                authTitle.textContent = 'Login';
+                authSubmitBtn.textContent = 'Login';
+                authToggleBtn.textContent = 'Switch to Register';
+                emailGroup.style.display = 'none';
+            } else {
+                authTitle.textContent = 'Register';
+                authSubmitBtn.textContent = 'Register';
+                authToggleBtn.textContent = 'Switch to Login';
+                emailGroup.style.display = 'block';
+            }
+        }
+
+        // Handle form submission (login or register)
+        async function handleSubmit() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                showAlert('Please enter both username and password', 'error');
+                return;
+            }
+            
+            try {
+                if (!isLoginMode) {
+                    // Register
+                    const email = document.getElementById('email').value.trim();
+                    if (!email) {
+                        showAlert('Please enter an email address', 'error');
+                        return;
+                    }
+                    
+                    const response = await fetch('/api/users/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password, email })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Registration failed');
+                    }
+                    
+                    currentUser = data.user;
+                    token = data.token;
+                    showAlert('Registration successful!', 'success');
+                } else {
+                    // Login
+                    const response = await fetch('/api/users/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Login failed');
+                    }
+                    
+                    currentUser = data.user;
+                    token = data.token;
+                    showAlert('Login successful!', 'success');
+                }
+                
+                // Save auth state
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                
+                // Update UI
+                updateUserUI();
+                
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        // Update UI after login/logout
+        function updateUserUI() {
+            if (currentUser) {
+                // User is logged in
+                authPanel.style.display = 'none';
+                userDashboard.style.display = 'block';
+                
+                // Update dashboard user info
+                document.getElementById('user-username').textContent = currentUser.username;
+                document.getElementById('user-email').textContent = currentUser.email;
+                document.getElementById('user-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+                
+                // Format date if we have createdAt
+                if (currentUser.createdAt) {
+                    const joinDate = new Date(currentUser.createdAt);
+                    document.getElementById('user-joined').textContent = `Joined: ${joinDate.toLocaleDateString()}`;
+                } else {
+                    document.getElementById('user-joined').textContent = 'Member';
+                }
+                
+                // Update header user info
+                headerUserInfo.style.display = 'flex';
+                headerAvatar.textContent = currentUser.username.charAt(0).toUpperCase();
+                headerUsername.textContent = currentUser.username;
+            } else {
+                // User is logged out
+                authPanel.style.display = 'block';
+                userDashboard.style.display = 'none';
+                headerUserInfo.style.display = 'none';
+                userDropdown.style.display = 'none';
+                
+                if (!isLoginMode) {
+                    toggleAuthMode(); // Switch back to login mode
+                }
+                
+                // Reset form
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                document.getElementById('email').value = '';
+            }
+        }
+
+        // Logout user
+        function logout() {
+            currentUser = null;
+            token = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            
+            updateUserUI();
+            showAlert('You have been logged out', 'success');
+        }
+
+        // Toggle user dropdown
+        function toggleUserDropdown() {
+            if (userDropdown.style.display === 'block') {
+                userDropdown.style.display = 'none';
+        } else {
+            userDropdown.style.display = 'block';
+        }
+    }
+
+        // Initialize the app
+        function init() {
+            // Check for stored auth state
+            token = localStorage.getItem('token');
+            const storedUser = localStorage.getItem('user');
+            
+            if (token && storedUser) {
+                try {
+                    currentUser = JSON.parse(storedUser);
+                    updateUserUI();
+                } catch (error) {
+                    console.error('Failed to parse stored user data', error);
+                    logout(); // Clear invalid data
+                }
+            }
+            
+            // Attach event listeners
+            authToggleBtn.addEventListener('click', toggleAuthMode);
+            authSubmitBtn.addEventListener('click', handleSubmit);
+            logoutBtn.addEventListener('click', logout);
+            dropdownLogout.addEventListener('click', logout);
+            headerUserInfo.addEventListener('click', toggleUserDropdown);
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!headerUserInfo.contains(event.target) && !userDropdown.contains(event.target)) {
+                    userDropdown.style.display = 'none';
+                }
+            });
+        }
+
+        // Start the application
+        init();
+
+        // For demonstration purposes - this simulates API responses since there's no real backend
+        // In a real application, these would be replaced with actual API calls
+        window.fetch = function mockFetch(url, options) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    if (url === '/api/users/login') {
+                        const body = JSON.parse(options.body);
+                        
+                        // Simple mock validation
+                        if (body.username === 'demo' && body.password === 'password') {
+                            resolve({
+                                ok: true,
+                                json: () => Promise.resolve({
+                                    user: {
+                                        id: '123',
+                                        username: 'demo',
+                                        email: 'demo@example.com',
+                                        createdAt: new Date().toISOString()
+                                    },
+                                    token: 'mock-token-123'
+                                })
+                            });
+                        } else {
+                            resolve({
+                                ok: false,
+                                json: () => Promise.resolve({
+                                    error: 'Invalid username or password'
+                                })
+                            });
+                        }
+                    } else if (url === '/api/users/register') {
+                        const body = JSON.parse(options.body);
+                        
+                        // Check required fields
+                        if (!body.username || !body.email || !body.password) {
+                            resolve({
+                                ok: false,
+                                json: () => Promise.resolve({
+                                    error: 'All fields are required'
+                                })
+                            });
+                            return;
+                        }
+                        
+                        // Simple mock validation - in a real app, you would check for existing users
+                        resolve({
+                            ok: true,
+                            json: () => Promise.resolve({
+                                user: {
+                                    id: 'new-' + Math.random().toString(36).substring(7),
+                                    username: body.username,
+                                    email: body.email,
+                                    createdAt: new Date().toISOString()
+                                },
+                                token: 'mock-token-' + Math.random().toString(36).substring(7)
+                            })
+                        });
+                    }
+                }, 800); // Simulate network delay
+            });
+        };
+    </script>
+</body>
+</html> 

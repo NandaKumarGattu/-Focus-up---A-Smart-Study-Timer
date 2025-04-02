@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Year Mock Test Platform</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #6c757d;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --background: #f5f7fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+        }
+        
+        .app {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-radius: 6px 6px 0 0;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-color: #dee2e6;
+            border-bottom-color: white;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: #f0f2f5;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #3a5882;
+        }
+        
+        button:disabled {
+            background-color: var(--secondary);
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .question-block {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        
+        .question-text {
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .options {
+            margin-bottom: 10px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .option input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .test-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e9f0f8;
+            border-radius: 4px;
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .timer {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .result-container {
+            text-align: center;
+        }
+        
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .feedback {
+            margin: 20px 0;
+        }
+        
+        .answer-review {
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .correct {
+            color: var(--success);
+        }
+        
+        .incorrect {
+            color: var(--danger);
+        }
+        
+        .subjects-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .subject-card {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subject-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .subject-info {
+            color: var(--secondary);
+            font-size: 14px;
+        }
+        
+        .existing-question {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .question-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9f0f8;
+            border-radius: 4px;
+        }
+        
+        .analytics-container {
+            margin-top: 20px;
+        }
+        
+        .analytics-card {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .analytics-chart {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background-color: var(--light);
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            color: var(--secondary);
+            font-size: 14px;
+        }
+        
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .notification {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .notification.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .notification.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        /* Filter styles */
+        .filter-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f2f5;
+            border-radius: 6px;
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .filter-group {
+            flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                margin-bottom: 5px;
+                border-radius: 4px;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Final Year Mock Test Platform</h1>
+            <p>Prepare for your final exams with customized practice tests</p>
+        </header>
+        
+        <div class="app">
+            <div class="tabs">
+                <div class="tab active" data-tab="home">Home</div>
+                <div class="tab" data-tab="subjects">Subjects</div>
+                <div class="tab" data-tab="create">Create Test</div>
+                <div class="tab" data-tab="take-test">Take Test</div>
+                <div class="tab" data-tab="results">Results</div>
+                <div class="tab" data-tab="analytics">Analytics</div>
+            </div>
+            
+            <div class="tab-content active" id="home">
+                <h2>Welcome to Final Year Mock Test Platform</h2>
+                <p>This platform is designed to help final year students prepare for their exams with practice tests tailored to their subjects.</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Subjects</div>
+                        <div class="stat-value" id="total-subjects">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Tests</div>
+                        <div class="stat-value" id="total-tests">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Tests Taken</div>
+                        <div class="stat-value" id="tests-taken">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Average Score</div>
+                        <div class="stat-value" id="average-score">0%</div>
+                    </div>
+                </div>
+                
+                <h3 style="margin-top: 30px;">Recent Tests</h3>
+                <div id="recent-tests">
+                    <p>No recent tests. Start by taking a test!</p>
+                </div>
+                
+                <div class="btn-container">
+                    <button onclick="switchTab('subjects')">Browse Subjects</button>
+                    <button onclick="switchTab('create')" class="btn-success">Create New Test</button>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="subjects">
+                <h2>Final Year Subjects</h2>
+                <p>Select a subject to view or create tests.</p>
+                
+                <div class="filter-container">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="subject-search">Search Subjects</label>
+                            <input type="text" id="subject-search" placeholder="Enter subject name">
+                        </div>
+                        <div class="filter-group">
+                            <label for="subject-sort">Sort By</label>
+                            <select id="subject-sort">
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="tests-desc">Most Tests</option>
+                                <option value="tests-asc">Least Tests</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="apply-subject-filters">Apply Filters</button>
+                </div>
+                
+                <div class="subjects-container" id="subjects-list">
+                    <!-- Subjects will be loaded here -->
+                </div>
+                
+                <div class="btn-container">
+                    <button id="add-subject-btn">Add New Subject</button>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="create">
+                <h2>Create a New Test</h2>
+                <div class="form-group">
+                    <label for="test-title">Test Title</label>
+                    <input type="text" id="test-title" placeholder="Enter test title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject-select">Subject</label>
+                    <select id="subject-select">
+                        <option value="">-- Select a subject --</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="test-description">Description (Optional)</label>
+                    <textarea id="test-description" placeholder="Enter a description for this test"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="time-limit">Time Limit (minutes)</label>
+                    <input type="number" id="time-limit" min="1" value="60">
+                </div>
+                
+                <div class="form-group">
+                    <label for="passing-percentage">Passing Percentage</label>
+                    <input type="number" id="passing-percentage" min="1" max="100" value="60">
+                </div>
+                
+                <h3>Questions</h3>
+                <div id="questions-container">
+                    <!-- Existing questions will appear here -->
+                </div>
+                
+                <div class="question-block">
+                    <div class="form-group">
+                        <label for="question-text">Question</label>
+                        <textarea id="question-text" placeholder="Enter your question"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="option-a">Option A</label>
+                        <input type="text" id="option-a" placeholder="Enter option A">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="option-b">Option B</label>
+                        <input type="text" id="option-b" placeholder="Enter option B">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="option-c">Option C</label>
+                        <input type="text" id="option-c" placeholder="Enter option C">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="option-d">Option D</label>
+                        <input type="text" id="option-d" placeholder="Enter option D">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="correct-answer">Correct Answer</label>
+                        <select id="correct-answer">
+                            <option value="a">A</option>
+                            <option value="b">B</option>
+                            <option value="c">C</option>
+                            <option value="d">D</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="explanation">Explanation (Optional)</label>
+                        <textarea id="explanation" placeholder="Explain why this answer is correct"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="difficulty">Difficulty Level</label>
+                        <select id="difficulty">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    
+                    <button id="add-question-btn">Add Question</button>
+                </div>
+                
+                <div class="btn-container">
+                    <button id="cancel-test-btn" class="btn-secondary">Cancel</button>
+                    <button id="save-test-btn" class="btn-success">Save Test</button>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="take-test">
+                <div id="test-selection">
+                    <h2>Select a Test</h2>
+                    
+                    <div class="filter-container">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="test-subject-filter">Subject</label>
+                                <select id="test-subject-filter">
+                                    <option value="">All Subjects</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="test-search">Search Tests</label>
+                                <input type="text" id="test-search" placeholder="Search by test title">
+                            </div>
+                        </div>
+                        <button id="apply-test-filters">Apply Filters</button>
+                    </div>
+                    
+                    <div id="tests-list" class="subjects-container">
+                        <!-- Tests will be loaded here -->
+                    </div>
+                </div>
+                
+                <div id="test-container" style="display: none;">
+                    <div class="test-info">
+                        <h2 id="current-test-title">Test Title</h2>
+                        <p id="current-test-subject">Subject: </p>
+                        <p id="current-test-description">Description: </p>
+                    </div>
+                    
+                    <div class="timer" id="timer">Time Remaining: 60:00</div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress" id="progress" style="width: 0%;"></div>
+                        </div>
+                        <p id="progress-text">Question 1 of 10</p>
+                    </div>
+                    
+                    <div id="question-display">
+                        <!-- Question will be displayed here -->
+                    </div>
+                    
+                    <div class="btn-container">
+                        <button id="prev-btn" class="btn-secondary" disabled>Previous</button>
+                        <button id="mark-for-review-btn">Mark for Review</button>
+                        <button id="next-btn">Next</button>
+                        <button id="submit-test-btn" class="btn-success" style="display: none;">Submit Test</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="results">
+                <h2>Test Results</h2>
+                
+                <div class="filter-container">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="results-subject-filter">Subject</label>
+                            <select id="results-subject-filter">
+                                <option value="">All Subjects</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="results-date-filter">Date Range</label>
+                            <select id="results-date-filter">
+                                <option value="all">All Time</option>
+                                <option value="week">Last Week</option>
+                                <option value="month">Last Month</option>
+                                <option value="year">Last Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="apply-results-filters">Apply Filters</button>
+                </div>
+                
+                <div id="no-results" style="text-align: center; margin: 40px 0;">
+                    <p>No test results available yet. Take a test to see your results!</p>
+                </div>
+                
+                <div id="results-list" style="display: none;">
+                    <!-- Results list will be displayed here -->
+                </div>
+                
+                <div id="result-details" style="display: none;">
+                    <div class="result-container">
+                        <h3 id="result-test-title">Test Title</h3>
+                        <p id="result-test-info">Subject: </p>
+                        <p id="result-date">Date: </p>
+                        <div class="score" id="score">Your Score: 8/10 (80%)</div>
+                        <div id="pass-status" class="notification success">Pass</div>
+                        <div class="feedback" id="feedback">Great job! Keep practicing to improve your knowledge.</div>
+                        
+                        <div class="answer-review">
+                            <h3>Review Your Answers</h3>
+                            <div id="answers-review">
+                                <!-- Answers review will be displayed here -->
+                            </div>
+                        </div>
+                        
+                        <div class="btn-container">
+                            <button id="back-to-results-btn" class="btn-secondary">Back to Results</button>
+                            <button id="retake-test-btn" class="btn-primary">Retake Test</button>
+                            <button id="download-result-btn">Download Result</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="analytics">
+                <h2>Performance Analytics</h2>
+                
+                <div class="filter-container">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="analytics-subject-filter">Subject</label>
+                            <select id="analytics-subject-filter">
+                                <option value="">All Subjects</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="analytics-period-filter">Time Period</label>
+                            <select id="analytics-period-filter">
+                                <option value="month">Last Month</option>
+                                <option value="quarter">Last Quarter</option>
+                                <option value="year">Last Year</option>
+                                <option value="all" selected>All Time</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="apply-analytics-filters">Apply Filters</button>
+                </div>
+                
+                <div class="analytics-container">
+                    <div class="analytics-card">
+                        <h3>Score Distribution</h3>
+                        <div class="analytics-chart" id="score-chart">
+                            <p>No test data available yet.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h3>Performance by Subject</h3>
+                        <div class="analytics-chart" id="subject-chart">
+                            <p>No subject data available yet.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h3>Performance Over Time</h3>
+                        <div class="analytics-chart" id="time-chart">
+                            <p>Take more tests to see your progress over time.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Tests Completed</div>
+                            <div class="stat-value" id="tests-completed">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Average Score</div>
+                            <div class="stat-value" id="analytics-avg-score">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Best Subject</div>
+                            <div class="stat-value" id="best-subject">N/A</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Needs Improvement</div>
+                            <div class="stat-value" id="worst-subject">N/A</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Subject Modal -->
+    <div class="modal" id="add-subject-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Subject</h3>
+                <span class="modal-close" id="close-subject-modal">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="new-subject-name">Subject Name</label>
+                <input type="text" id="new-subject-name" placeholder="Enter subject name">
+            </div>
+            <div class="form-group">
+                <label for="new-subject-description">Description (Optional)</label>
+                <textarea id="new-subject-description" placeholder="Enter subject description"></textarea>
+            </div>
+            <button id="save-subject-btn" class="btn-success">Save Subject</button>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmation-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmation-title">Confirmation</h3>
+                <span class="modal-close" id="close-confirmation-modal">&times;</span>
+            </div>
+            <p id="confirmation-message">Are you sure you want to proceed?</p>
+            <div class="btn-container">
+                <button id="cancel-confirmation-btn" class="btn-secondary">Cancel</button>
+                <button id="confirm-action-btn" class="btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Local Storage API for storing and retrieving data
+        const API = {
+            subjects: [],
+            tests: [],
+            results: [],
+            
+            init() {
+                // Check local storage
+                const storedSubjects = localStorage.getItem('final-year-subjects');
+                const storedTests = localStorage.getItem('final-year-tests');
+                const storedResults = localStorage.getItem('final-year-results');
+                
+                if (storedSubjects) {
+                    this.subjects = JSON.parse(storedSubjects);
+                } else {
+                    // Sample subjects for final year
+                    this.subjects = [
+                        { 
+                            id: 1, 
+                            name: 'Advanced Database Systems', 
+                            description: 'Covers distributed databases, NoSQL, data warehousing, and data mining concepts.',
+                            testsCount: 1 
+                        },
+                        { 
+                            id: 2, 
+                            name: 'Machine Learning', 
+                            description: 'Covers supervised and unsupervised learning, neural networks, and deep learning.',
+                            testsCount: 1 
+                        },
+                        { 
+                            id: 3, 
+                            name: 'Software Project Management', 
+                            description: 'Covers agile methodologies, risk management, and quality assurance processes.',
+                            testsCount: 1 
+                        },
+                        { 
+                            id: 4, 
+                            name: 'Cybersecurity', 
+                            description: 'Covers network security, cryptography, and ethical hacking principles.',
+                            testsCount: 1 
+                        },
+                        { 
+                            id: 5, 
+                            name: 'Artificial Intelligence', 
+                            description: 'Covers search algorithms, knowledge representation, expert systems, and natural language processing.',
+                            testsCount: 1 
+                        }
+                    ];
+                    this.saveSubjects();
+                }
+                
+                if (storedTests) {
+                    this.tests = JSON.parse(storedTests);
+                } else {
+                    // Sample tests
+                    this.tests = [
+                        {
+                            id: 1,
+                            title: 'Database Normalization',
+                            subjectId: 1,
+                            description: 'Test your knowledge of database normalization forms and techniques.',
+                            timeLimit: 30,
+                            passingPercentage: 70,
+                            questions: [
+                                {
+                                    id: 1,
+                                    text: 'Which normal form eliminates transitive dependencies?',
+                                    options: {
+                                        a: 'First Normal Form (1NF)',
+                                        b: 'Second Normal Form (2NF)',
+                                        c: 'Third Normal Form (3NF)',
+                                        d: 'Boyce-Codd Normal Form (BCNF)'
+                                    },
+                                    correctAnswer: 'c',
+                                    explanation: 'Third Normal Form (3NF) eliminates transitive dependencies, where non-key attributes depend on other non-key attributes.',
+                                    difficulty: 'medium'
+                                },
+                                {
+                                    id: 2,
+                                    text: 'Which of the following is NOT a requirement for First Normal Form (1NF)?',
+                                    options: {
+                                        a: 'Eliminate duplicate columns',
+                                        b: 'Create separate tables for related data',
+                                        c: 'Eliminate repeating groups',
+                                        d: 'Eliminate partial dependencies'
+                                    },
+                                    correctAnswer: 'd',
+                                    explanation: 'Eliminating partial dependencies is a requirement for Second Normal Form (2NF), not First Normal Form (1NF).',
+                                    difficulty: 'easy'
+                                }
+                            ]
+                        },
+                        {
+                            id: 2,
+                            title: 'Neural Networks Basics',
+                            subjectId: 2,
+                            description: 'Test your understanding of neural network architecture and training.',
+                            timeLimit: 45,
+                            passingPercentage: 60,
+                            questions: [
+                                {
+                                    id: 1,
+                                    text: 'Which activation function outputs values between 0 and 1?',
+                                    options: {
+                                        a: 'ReLU',
+                                        b: 'Sigmoid',
+                                        c: 'Tanh',
+                                        d: 'Softmax'
+                                    },
+                                    correctAnswer: 'b',
+                                    explanation: 'The Sigmoid activation function outputs values between 0 and 1, making it useful for binary classification problems.',
+                                    difficulty: 'easy'
+                                },
+                                {
+                                    id: 2,
+                                    text: 'What is backpropagation used for in neural networks?',
+                                    options: {
+                                        a: 'Forward pass computation',
+                                        b: 'Weight initialization',
+                                        c: 'Gradient computation for weight updates',
+                                        d: 'Activation function selection'
+                                    },
+                                    correctAnswer: 'c',
+                                    explanation: 'Backpropagation is an algorithm used to calculate gradients of the loss function with respect to the weights, which are then used to update the weights during training.',
+                                    difficulty: 'medium'
+                                }
+                            ]
+                        }
+                    ];
+                    this.saveTests();
+                }
+                
+                if (storedResults) {
+                    this.results = JSON.parse(storedResults);
+                }
+            },
+            
+            saveSubjects() {
+                localStorage.setItem('final-year-subjects', JSON.stringify(this.subjects));
+            },
+            
+            saveTests() {
+                localStorage.setItem('final-year-tests', JSON.stringify(this.tests));
+            },
+            
+            saveResults() {
+                localStorage.setItem('final-year-results', JSON.stringify(this.results));
+            },
+            
+            getAllSubjects() {
+                return this.subjects;
+            },
+            
+            getSubjectById(id) {
+                return this.subjects.find(subject => subject.id === id);
+            },
+            
+            addSubject(subject) {
+                // Generate a new ID
+                const newId = this.subjects.length > 0 ? Math.max(...this.subjects.map(s => s.id)) + 1 : 1;
+                
+                const newSubject = {
+                    id: newId,
+                    name: subject.name,
+                    description: subject.description || '',
+                    testsCount: 0
+                };
+                
+                this.subjects.push(newSubject);
+                this.saveSubjects();
+                return newSubject;
+            },
+            
+            updateSubject(subject) {
+                const index = this.subjects.findIndex(s => s.id === subject.id);
+                if (index !== -1) {
+                    this.subjects[index] = { ...this.subjects[index], ...subject };
+                    this.saveSubjects();
+                    return true;
+                }
+                return false;
+            },
+            
+            deleteSubject(id) {
+                const index = this.subjects.findIndex(s => s.id === id);
+                if (index !== -1) {
+                    this.subjects.splice(index, 1);
+                    this.saveSubjects();
+                    
+                    // Delete all tests for this subject
+                    this.tests = this.tests.filter(test => test.subjectId !== id);
+                    this.saveTests();
+                    
+                    return true;
+                }
+                return false;
+            },
+            
+            getAllTests() {
+                return this.tests;
+            },
+            
+            getTestsBySubject(subjectId) {
+                return this.tests.filter(test => test.subjectId === subjectId);
+            },
+            
+            getTestById(id) {
+                return this.tests.find(test => test.id === id);
+            },
+            
+            addTest(test) {
+                // Generate a new ID
+                const newId = this.tests.length > 0 ? Math.max(...this.tests.map(t => t.id)) + 1 : 1;
+                
+                const newTest = {
+                    id: newId,
+                    title: test.title,
+                    subjectId: test.subjectId,
+                    description: test.description || '',
+                    timeLimit: test.timeLimit,
+                    passingPercentage: test.passingPercentage,
+                    questions: test.questions || []
+                };
+                
+                this.tests.push(newTest);
+                
+                // Update subject test count
+                const subject = this.getSubjectById(test.subjectId);
+                if (subject) {
+                    subject.testsCount = (subject.testsCount || 0) + 1;
+                    this.updateSubject(subject);
+                }
+                
+                this.saveTests();
+                return newTest;
+            },
+            
+            updateTest(test) {
+                const index = this.tests.findIndex(t => t.id === test.id);
+                if (index !== -1) {
+                    this.tests[index] = { ...this.tests[index], ...test };
+                    this.saveTests();
+                    return true;
+                }
+                return false;
+            },
+            
+            deleteTest(id) {
+                const test = this.getTestById(id);
+                if (!test) return false;
+                
+                const index = this.tests.findIndex(t => t.id === id);
+                if (index !== -1) {
+                    this.tests.splice(index, 1);
+                    
+                    // Update subject test count
+                    const subject = this.getSubjectById(test.subjectId);
+                    if (subject) {
+                        subject.testsCount = Math.max((subject.testsCount || 0) - 1, 0);
+                        this.updateSubject(subject);
+                    }
+                    
+                    this.saveTests();
+                    return true;
+                }
+                return false;
+            },
+            
+            addResult(result) {
+                // Generate a new ID
+                const newId = this.results.length > 0 ? Math.max(...this.results.map(r => r.id)) + 1 : 1;
+                
+                const newResult = {
+                    id: newId,
+                    testId: result.testId,
+                    testTitle: result.testTitle,
+                    subjectId: result.subjectId,
+                    subjectName: result.subjectName,
+                    date: result.date || new Date().toISOString(),
+                    score: result.score,
+                    totalQuestions: result.totalQuestions,
+                    percentage: result.percentage,
+                    passed: result.passed,
+                    answers: result.answers || []
+                };
+                
+                this.results.push(newResult);
+                this.saveResults();
+                return newResult;
+            },
+            
+            getResultById(id) {
+                return this.results.find(result => result.id === id);
+            },
+            
+            getAllResults() {
+                return this.results;
+            },
+            
+            getResultsBySubject(subjectId) {
+                return this.results.filter(result => result.subjectId === subjectId);
+            }
+        };
+        
+        // Initialize the API
+        API.init();
+        
+        // Utility functions
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+        
+        function generateFeedback(percentage, passingPercentage) {
+            if (percentage >= 90) {
+                return "Excellent job! You have a strong grasp of this subject.";
+            } else if (percentage >= 80) {
+                return "Very good! Keep up the good work.";
+            } else if (percentage >= passingPercentage) {
+                return "Good job passing this test. Continue studying to improve your score.";
+            } else if (percentage >= passingPercentage - 10) {
+                return "You were close to passing. Review the material and try again.";
+            } else {
+                return "You need more practice with this material. Review the questions you missed and try again.";
+            }
+        }
+        
+        // Tab switching functionality
+        function switchTab(tabId) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Deactivate all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activate the selected tab
+            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            // If switching to subjects tab, load subjects
+            if (tabId === 'subjects') {
+                loadSubjects();
+            }
+            
+            // If switching to take-test tab, load tests
+            if (tabId === 'take-test') {
+                loadTests();
+                
+                // Reset test container
+                document.getElementById('test-selection').style.display = 'block';
+                document.getElementById('test-container').style.display = 'none';
+            }
+            
+            // If switching to results tab, load results
+            if (tabId === 'results') {
+                loadResults();
+            }
+            
+            // If switching to analytics tab, load analytics
+            if (tabId === 'analytics') {
+                loadAnalytics();
+            }
+            
+            // If switching to create tab, load subjects for select
+            if (tabId === 'create') {
+                loadSubjectsForSelect();
+            }
+            
+            // If switching to home tab, update stats
+            if (tabId === 'home') {
+                updateHomeStats();
+            }
+        }
+        
+        // Add event listeners to tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                switchTab(tabId);
+            });
+        });
+        
+        // Load subjects
+        function loadSubjects() {
+            const subjects = API.getAllSubjects();
+            const subjectsList = document.getElementById('subjects-list');
+            
+            subjectsList.innerHTML = '';
+            
+            if (subjects.length === 0) {
+                subjectsList.innerHTML = '<p>No subjects found. Add a new subject to get started.</p>';
+                return;
+            }
+            
+            subjects.forEach(subject => {
+                const subjectCard = document.createElement('div');
+                subjectCard.className = 'subject-card';
+                subjectCard.innerHTML = `
+                    <div class="subject-title">${subject.name}</div>
+                    <div class="subject-info">Tests: ${subject.testsCount || 0}</div>
+                    <p>${subject.description || 'No description'}</p>
+                    <div class="question-actions">
+                        <button class="btn-small view-tests-btn" data-id="${subject.id}">View Tests</button>
+                        <button class="btn-small btn-secondary edit-subject-btn" data-id="${subject.id}">Edit</button>
+                        <button class="btn-small btn-danger delete-subject-btn" data-id="${subject.id}">Delete</button>
+                    </div>
+                `;
+                
+                subjectsList.appendChild(subjectCard);
+            });
+            
+            // Add event listeners to view tests buttons
+            document.querySelectorAll('.view-tests-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const subjectId = parseInt(button.getAttribute('data-id'));
+                    // Filter tests for this subject
+                    filterTests(subjectId);
+                    switchTab('take-test');
+                });
+            });
+            
+            // Add event listeners to edit subject buttons
+            document.querySelectorAll('.edit-subject-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const subjectId = parseInt(button.getAttribute('data-id'));
+                    // TODO: Implement edit subject functionality
+                    alert('Edit subject functionality not implemented yet');
+                });
+            });
+            
+            // Add event listeners to delete subject buttons
+            document.querySelectorAll('.delete-subject-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const subjectId = parseInt(button.getAttribute('data-id'));
+                    
+                    // Show confirmation modal
+                    document.getElementById('confirmation-title').textContent = 'Delete Subject';
+                    document.getElementById('confirmation-message').textContent = 'Are you sure you want to delete this subject? All tests for this subject will also be deleted.';
+                    document.getElementById('confirm-action-btn').setAttribute('data-action', 'delete-subject');
+                    document.getElementById('confirm-action-btn').setAttribute('data-id', subjectId);
+                    
+                    document.getElementById('confirmation-modal').style.display = 'block';
+                });
+            });
+        }
+        
+        // Add event listener to add subject button
+        document.getElementById('add-subject-btn').addEventListener('click', () => {
+            document.getElementById('add-subject-modal').style.display = 'block';
+        });
+        
+        // Add event listener to close subject modal
+        document.getElementById('close-subject-modal').addEventListener('click', () => {
+            document.getElementById('add-subject-modal').style.display = 'none';
+        });
+        
+        // Add event listener to save subject button
+        document.getElementById('save-subject-btn').addEventListener('click', () => {
+            const name = document.getElementById('new-subject-name').value.trim();
+            const description = document.getElementById('new-subject-description').value.trim();
+            
+            if (!name) {
+                alert('Subject name is required');
+                return;
+            }
+            
+            API.addSubject({ name, description });
+            
+            // Clear form
+            document.getElementById('new-subject-name').value = '';
+            document.getElementById('new-subject-description').value = '';
+            
+            // Close modal
+            document.getElementById('add-subject-modal').style.display = 'none';
+            
+            // Reload subjects
+            loadSubjects();
+        });
+        
+        // Add event listener to close confirmation modal
+        document.getElementById('close-confirmation-modal').addEventListener('click', () => {
+            document.getElementById('confirmation-modal').style.display = 'none';
+        });
+        
+        document.getElementById('cancel-confirmation-btn').addEventListener('click', () => {
+            document.getElementById('confirmation-modal').style.display = 'none';
+        });
+        
+        // Add event listener to confirm action button
+        document.getElementById('confirm-action-btn').addEventListener('click', () => {
+            const action = document.getElementById('confirm-action-btn').getAttribute('data-action');
+            const id = parseInt(document.getElementById('confirm-action-btn').getAttribute('data-id'));
+            
+            if (action === 'delete-subject') {
+                API.deleteSubject(id);
+                loadSubjects();
+            } else if (action === 'delete-test') {
+                API.deleteTest(id);
+                loadTests();
+            } else if (action === 'submit-test') {
+                submitTest();
+            }
+            
+            // Close modal
+            document.getElementById('confirmation-modal').style.display = 'none';
+        });
+        
+        // Load subjects for select
+        function loadSubjectsForSelect() {
+            const subjects = API.getAllSubjects();
+            const subjectSelect = document.getElementById('subject-select');
+            
+            subjectSelect.innerHTML = '<option value="">-- Select a subject --</option>';
+            
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                option.textContent = subject.name;
+                subjectSelect.appendChild(option);
+            });
+        }
+        
+        // Variables for current test
+        let currentTest = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let timerInterval = null;
+        let timeRemaining = 0;
+        
+        // Load tests
+        function loadTests() {
+            const tests = API.getAllTests();
+            const testsList = document.getElementById('tests-list');
+            
+            testsList.innerHTML = '';
+            
+            if (tests.length === 0) {
+                testsList.innerHTML = '<p>No tests found. Create a new test to get started.</p>';
+                return;
+            }
+            
+            tests.forEach(test => {
+                const subject = API.getSubjectById(test.subjectId);
+                const testCard = document.createElement('div');
+                testCard.className = 'subject-card';
+                testCard.innerHTML = `
+                    <div class="subject-title">${test.title}</div>
+                    <div class="subject-info">Subject: ${subject ? subject.name : 'Unknown'}</div>
+                    <div class="subject-info">Questions: ${test.questions.length} | Time: ${test.timeLimit} min</div>
+                    <p>${test.description || 'No description'}</p>
+                    <div class="question-actions">
+                        <button class="btn-small btn-success start-test-btn" data-id="${test.id}">Start Test</button>
+                        <button class="btn-small btn-secondary edit-test-btn" data-id="${test.id}">Edit</button>
+                        <button class="btn-small btn-danger delete-test-btn" data-id="${test.id}">Delete</button>
+                    </div>
+                `;
+                
+                testsList.appendChild(testCard);
+            });
+            
+            // Load subjects for filter
+            const subjects = API.getAllSubjects();
+            const subjectFilter = document.getElementById('test-subject-filter');
+            
+            subjectFilter.innerHTML = '<option value="">All Subjects</option>';
+            
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                option.textContent = subject.name;
+                subjectFilter.appendChild(option);
+            });
+            
+            // Add event listeners to start test buttons
+            document.querySelectorAll('.start-test-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const testId = parseInt(button.getAttribute('data-id'));
+                    startTest(testId);
+                });
+            });
+            
+            // Add event listeners to edit test buttons
+            document.querySelectorAll('.edit-test-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const testId = parseInt(button.getAttribute('data-id'));
+                    // TODO: Implement edit test functionality
+                    alert('Edit test functionality not implemented yet');
+                });
+            });
+            
+            // Add event listeners to delete test buttons
+            document.querySelectorAll('.delete-test-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const testId = parseInt(button.getAttribute('data-id'));
+                    
+                    // Show confirmation modal
+                    document.getElementById('confirmation-title').textContent = 'Delete Test';
+                    document.getElementById('confirmation-message').textContent = 'Are you sure you want to delete this test?';
+                    document.getElementById('confirm-action-btn').setAttribute('data-action', 'delete-test');
+                    document.getElementById('confirm-action-btn').setAttribute('data-id', testId);
+                    
+                    document.getElementById('confirmation-modal').style.display = 'block';
+                });
+            });
+        }
+        
+        // Filter tests
+        document.getElementById('apply-test-filters').addEventListener('click', () => {
+            const subjectId = parseInt(document.getElementById('test-subject-filter').value) || null;
+            const searchTerm = document.getElementById('test-search').value.trim().toLowerCase();
+            
+            filterTests(subjectId, searchTerm);
+        });
+        
+        function filterTests(subjectId, searchTerm) {
+            let tests = API.getAllTests();
+            
+            if (subjectId) {
+                tests = tests.filter(test => test.subjectId === subjectId);
+            }
+            
+            if (searchTerm) {
+                tests = tests.filter(test => test.title.toLowerCase().includes(searchTerm));
+            }
+            
+            const testsList = document.getElementById('tests-list');
+            testsList.innerHTML = '';
+            
+            if (tests.length === 0) {
+                testsList.innerHTML = '<p>No tests found matching your filters.</p>';
+                return;
+            }
+            
+            tests.forEach(test => {
+                const subject = API.getSubjectById(test.subjectId);
+                const testCard = document.createElement('div');
+                testCard.className = 'subject-card';
+                testCard.innerHTML = `
+                    <div class="subject-title">${test.title}</div>
+                    <div class="subject-info">Subject: ${subject ? subject.name : 'Unknown'}</div>
+                    <div class="subject-info">Questions: ${test.questions.length} | Time: ${test.timeLimit} min</div>
+                    <p>${test.description || 'No description'}</p>
+                    <div class="question-actions">
+                        <button class="btn-small btn-success start-test-btn" data-id="${test.id}">Start Test</button>
+                        <button class="btn-small btn-secondary edit-test-btn" data-id="${test.id}">Edit</button>
+                        <button class="btn-small btn-danger delete-test-btn" data-id="${test.id}">Delete</button>
+                    </div>
+                `;
+                
+                testsList.appendChild(testCard);
+            });
+            
+            // Add event listeners to start test buttons
+            document.querySelectorAll('.start-test-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const testId = parseInt(button.getAttribute('data-id'));
+                    startTest(testId);
+                });
+            });
+            
+            // Add event listeners to edit test buttons
+            document.querySelectorAll('.edit-test-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const testId = parseInt(button.getAttribute('data-id'));
+                    // TODO: Implement edit test functionality
+                    alert('Edit test functionality not implemented yet');
+                });
+            });
+            
+            // Add event listeners to delete test buttons
+            document.querySelectorAll('.delete-test-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const testId = parseInt(button.getAttribute('data-id'));
+                    
+                    // Show confirmation modal
+                    document.getElementById('confirmation-title').textContent = 'Delete Test';
+                    document.getElementById('confirmation-message').textContent = 'Are you sure you want to delete this test?';
+                    document.getElementById('confirm-action-btn').setAttribute('data-action', 'delete-test');
+                    document.getElementById('confirm-action-btn').setAttribute('data-id', testId);
+                    
+                    document.getElementById('confirmation-modal').style.display = 'block';
+                });
+            });
+            
+            // If subjectId is provided, update the subject filter
+            if (subjectId) {
+                document.getElementById('test-subject-filter').value = subjectId;
+            }
+        }
+        
+        // Start test
+        function startTest(testId) {
+            currentTest = API.getTestById(testId);
+            
+            if (!currentTest) {
+                alert('Test not found');
+                return;
+            }
+            
+            // Initialize test variables
+            currentQuestionIndex = 0;
+            userAnswers = Array(currentTest.questions.length).fill(null);
+            
+            // Set up test container
+            document.getElementById('test-selection').style.display = 'none';
+            document.getElementById('test-container').style.display = 'block';
+            
+            // Set test info
+            document.getElementById('current-test-title').textContent = currentTest.title;
+            
+            const subject = API.getSubjectById(currentTest.subjectId);
+            document.getElementById('current-test-subject').textContent = `Subject: ${subject ? subject.name : 'Unknown'}`;
+            document.getElementById('current-test-description').textContent = `Description: ${currentTest.description || 'No description'}`;
+            
+            // Set up timer
+            timeRemaining = currentTest.timeLimit * 60;
+            document.getElementById('timer').textContent = `Time Remaining: ${formatTime(timeRemaining)}`;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                document.getElementById('timer').textContent = `Time Remaining: ${formatTime(timeRemaining)}`;
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    submitTest();
+                }
+            }, 1000);
+            
+            // Set up progress
+            updateProgress();
+            
+            // Load first question
+            loadQuestion();
+        }
+        
+        // Load question
+        function loadQuestion() {
+            const question = currentTest.questions[currentQuestionIndex];
+            const questionDisplay = document.getElementById('question-display');
+            
+            questionDisplay.innerHTML = `
+                <div class="question-block">
+                    <div class="question-text">${currentQuestionIndex + 1}. ${question.text}</div>
+                    <div class="options">
+                        <div class="option">
+                            <input type="radio" name="answer" id="option-a" value="a" ${userAnswers[currentQuestionIndex] === 'a' ? 'checked' : ''}>
+                            <label for="option-a">A. ${question.options.a}</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="answer" id="option-b" value="b" ${userAnswers[currentQuestionIndex] === 'b' ? 'checked' : ''}>
+                            <label for="option-b">B. ${question.options.b}</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="answer" id="option-c" value="c" ${userAnswers[currentQuestionIndex] === 'c' ? 'checked' : ''}>
+                            <label for="option-c">C. ${question.options.c}</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="answer" id="option-d" value="d" ${userAnswers[currentQuestionIndex] === 'd' ? 'checked' : ''}>
+                            <label for="option-d">D. ${question.options.d}</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners to option inputs
+            document.querySelectorAll('input[name="answer"]').forEach(input => {
+                input.addEventListener('change', () => {
+                    userAnswers[currentQuestionIndex] = input.value;
+                });
+            });
+            
+            // Update navigation buttons
+            document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+            
+            if (currentQuestionIndex === currentTest.questions.length - 1) {
+                document.getElementById('next-btn').style.display = 'none';
+                document.getElementById('submit-test-btn').style.display = 'block';
+            } else {
+                document.getElementById('next-btn').style.display = 'block';
+                document.getElementById('submit-test-btn').style.display = 'none';
+            }
+        }
+        
+        // Update progress
+        function updateProgress() {
+            const progressEl = document.getElementById('progress');
+            const progressTextEl = document.getElementById('progress-text');
+            
+            const progress = (currentQuestionIndex + 1) / currentTest.questions.length * 100;
+            progressEl.style.width = `${progress}%`;
+            progressTextEl.textContent = `Question ${currentQuestionIndex + 1} of ${currentTest.questions.length}`;
+        }
+        
+        // Add event listeners to navigation buttons
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                updateProgress();
+                loadQuestion();
+            }
+        });
+        
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentQuestionIndex < currentTest.questions.length - 1) {
+                currentQuestionIndex++;
+                updateProgress();
+                loadQuestion();
+            }
+        });
+        
+        document.getElementById('submit-test-btn').addEventListener('click', () => {
+            // Check if all questions are answered
+            const unanswered = userAnswers.filter(answer => answer === null).length;
+            
+            if (unanswered > 0) {
+                // Show confirmation modal
+                document.getElementById('confirmation-title').textContent = 'Submit Test';
+                document.getElementById('confirmation-message').textContent = `You have ${unanswered} unanswered question(s). Are you sure you want to submit the test?`;
+                document.getElementById('confirm-action-btn').setAttribute('data-action', 'submit-test');
+                
+                document.getElementById('confirmation-modal').style.display = 'block';
+            } else {
+                submitTest();
+            }
+        });
+        
+        // Submit test
+        function submitTest() {
+            // Stop timer
+            clearInterval(timerInterval);
+            
+            // Calculate score
+            let correctAnswers = 0;
+            const detailedAnswers = [];
+            
+            currentTest.questions.forEach((question, index) => {
+                const userAnswer = userAnswers[index] || null;
+                const isCorrect = userAnswer === question.correctAnswer;
+                
+                if (isCorrect) {
+                    correctAnswers++;
+                }
+                
+                detailedAnswers.push({
+                    questionText: question.text,
+                    userAnswer,
+                    correctAnswer: question.correctAnswer,
+                    isCorrect,
+                    explanation: question.explanation || ''
+                });
+            });
+            
+            const percentage = (correctAnswers / currentTest.questions.length) * 100;
+            const passed = percentage >= currentTest.passingPercentage;
+            
+            // Save test result
+            // Save test result
+            const subject = API.getSubjectById(currentTest.subjectId);
+            
+            const result = {
+                testId: currentTest.id,
+                testTitle: currentTest.title,
+                subjectId: currentTest.subjectId,
+                subjectName: subject ? subject.name : 'Unknown',
+                date: new Date().toISOString(),
+                score: correctAnswers,
+                totalQuestions: currentTest.questions.length,
+                percentage: percentage.toFixed(2),
+                passed,
+                answers: detailedAnswers
+            };
+            
+            API.addResult(result);
+            
+            // Display results
+            displayTestResults(result);
+        }
+        
+        // Display test results
+        function displayTestResults(result) {
+            // Hide test container
+            document.getElementById('test-container').style.display = 'none';
+            
+            // Show results container
+            document.getElementById('results-container').style.display = 'block';
+            
+            // Set results info
+            document.getElementById('result-test-title').textContent = result.testTitle;
+            document.getElementById('result-subject').textContent = `Subject: ${result.subjectName}`;
+            document.getElementById('result-score').textContent = `Score: ${result.score}/${result.totalQuestions} (${result.percentage}%)`;
+            document.getElementById('result-status').textContent = result.passed ? 'PASSED' : 'FAILED';
+            document.getElementById('result-status').className = result.passed ? 'status passed' : 'status failed';
+            
+            // Set feedback
+            document.getElementById('result-feedback').textContent = generateFeedback(parseFloat(result.percentage), currentTest.passingPercentage);
+            
+            // Display answers
+            const answersContainer = document.getElementById('result-answers');
+            answersContainer.innerHTML = '';
+            
+            result.answers.forEach((answer, index) => {
+                const answerCard = document.createElement('div');
+                answerCard.className = `answer-card ${answer.isCorrect ? 'correct' : 'incorrect'}`;
+                
+                answerCard.innerHTML = `
+                    <div class="question-text">${index + 1}. ${answer.questionText}</div>
+                    <div class="answer-info">Your answer: ${answer.userAnswer ? answer.userAnswer.toUpperCase() : 'No answer'}</div>
+                    <div class="answer-info">Correct answer: ${answer.correctAnswer.toUpperCase()}</div>
+                    <div class="explanation">${answer.explanation || 'No explanation available'}</div>
+                `;
+                
+                answersContainer.appendChild(answerCard);
+            });
+            
+            // Add event listener to finish button
+            document.getElementById('finish-test-btn').addEventListener('click', () => {
+                // Hide results container
+                document.getElementById('results-container').style.display = 'none';
+                
+                // Show test selection
+                document.getElementById('test-selection').style.display = 'block';
+                
+                // Switch to results tab
+                switchTab('results');
+            });
+        }
+        
+        // Add event listener to create test form
+        document.getElementById('create-test-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            
+            // Get form data
+            const title = document.getElementById('test-title').value.trim();
+            const subjectId = parseInt(document.getElementById('subject-select').value);
+            const description = document.getElementById('test-description').value.trim();
+            const timeLimit = parseInt(document.getElementById('time-limit').value);
+            const passingPercentage = parseInt(document.getElementById('passing-percentage').value);
+            
+            // Validate form data
+            if (!title) {
+                alert('Test title is required');
+                return;
+            }
+            
+            if (!subjectId) {
+                alert('Subject is required');
+                return;
+            }
+            
+            if (!timeLimit || timeLimit <= 0) {
+                alert('Time limit must be a positive number');
+                return;
+            }
+            
+            if (!passingPercentage || passingPercentage <= 0 || passingPercentage > 100) {
+                alert('Passing percentage must be between 1 and 100');
+                return;
+            }
+            
+            // Get questions
+            const questions = [];
+            document.querySelectorAll('.question-item').forEach((questionItem, index) => {
+                const text = questionItem.querySelector('.question-text-input').value.trim();
+                const optionA = questionItem.querySelector('.option-a').value.trim();
+                const optionB = questionItem.querySelector('.option-b').value.trim();
+                const optionC = questionItem.querySelector('.option-c').value.trim();
+                const optionD = questionItem.querySelector('.option-d').value.trim();
+                const correctAnswer = questionItem.querySelector('.correct-answer').value;
+                const explanation = questionItem.querySelector('.explanation').value.trim();
+                const difficulty = questionItem.querySelector('.difficulty').value;
+                
+                if (text && optionA && optionB && optionC && optionD && correctAnswer) {
+                    questions.push({
+                        id: index + 1,
+                        text,
+                        options: {
+                            a: optionA,
+                            b: optionB,
+                            c: optionC,
+                            d: optionD
+                        },
+                        correctAnswer,
+                        explanation,
+                        difficulty
+                    });
+                }
+            });
+            
+            if (questions.length === 0) {
+                alert('At least one question is required');
+                return;
+            }
+            
+            // Create test
+            const test = {
+                title,
+                subjectId,
+                description,
+                timeLimit,
+                passingPercentage,
+                questions
+            };
+            
+            API.addTest(test);
+            
+            // Reset form
+            document.getElementById('create-test-form').reset();
+            document.getElementById('questions-container').innerHTML = '';
+            
+            // Show success message
+            alert('Test created successfully');
+            
+            // Switch to take test tab
+            switchTab('take-test');
+        });
+        
+        // Add event listener to add question button
+        document.getElementById('add-question-btn').addEventListener('click', () => {
+            addQuestionItem();
+        });
+        
+        // Add question item
+        function addQuestionItem() {
+            const questionsContainer = document.getElementById('questions-container');
+            const questionCount = questionsContainer.querySelectorAll('.question-item').length;
+            
+            const questionItem = document.createElement('div');
+            questionItem.className = 'question-item';
+            questionItem.innerHTML = `
+                <h4>Question ${questionCount + 1}</h4>
+                <div class="form-group">
+                    <label for="question-text-${questionCount}">Question Text:</label>
+                    <textarea id="question-text-${questionCount}" class="question-text-input" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="option-a-${questionCount}">Option A:</label>
+                        <input type="text" id="option-a-${questionCount}" class="option-a" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="option-b-${questionCount}">Option B:</label>
+                        <input type="text" id="option-b-${questionCount}" class="option-b" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="option-c-${questionCount}">Option C:</label>
+                        <input type="text" id="option-c-${questionCount}" class="option-c" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="option-d-${questionCount}">Option D:</label>
+                        <input type="text" id="option-d-${questionCount}" class="option-d" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="correct-answer-${questionCount}">Correct Answer:</label>
+                        <select id="correct-answer-${questionCount}" class="correct-answer" required>
+                            <option value="">-- Select --</option>
+                            <option value="a">A</option>
+                            <option value="b">B</option>
+                            <option value="c">C</option>
+                            <option value="d">D</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="difficulty-${questionCount}">Difficulty:</label>
+                        <select id="difficulty-${questionCount}" class="difficulty">
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="explanation-${questionCount}">Explanation:</label>
+                    <textarea id="explanation-${questionCount}" class="explanation"></textarea>
+                </div>
+                <button type="button" class="btn-small btn-danger remove-question-btn">Remove Question</button>
+                <hr>
+            `;
+            
+            questionsContainer.appendChild(questionItem);
+            
+            // Add event listener to remove question button
+            questionItem.querySelector('.remove-question-btn').addEventListener('click', () => {
+                questionItem.remove();
+                
+                // Update question numbers
+                document.querySelectorAll('.question-item').forEach((item, index) => {
+                    item.querySelector('h4').textContent = `Question ${index + 1}`;
+                });
+            });
+        }
+        
+        // Load results
+        function loadResults() {
+            const results = API.getAllResults();
+            const resultsList = document.getElementById('results-list');
+            
+            resultsList.innerHTML = '';
+            
+            if (results.length === 0) {
+                resultsList.innerHTML = '<p>No results found. Take a test to see your results here.</p>';
+                return;
+            }
+            
+            // Sort results by date (most recent first)
+            results.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            results.forEach(result => {
+                const resultCard = document.createElement('div');
+                resultCard.className = 'result-card';
+                resultCard.innerHTML = `
+                    <div class="result-title">${result.testTitle}</div>
+                    <div class="result-info">Subject: ${result.subjectName}</div>
+                    <div class="result-info">Date: ${new Date(result.date).toLocaleString()}</div>
+                    <div class="result-info">Score: ${result.score}/${result.totalQuestions} (${result.percentage}%)</div>
+                    <div class="result-status ${result.passed ? 'passed' : 'failed'}">${result.passed ? 'PASSED' : 'FAILED'}</div>
+                    <div class="question-actions">
+                        <button class="btn-small view-result-btn" data-id="${result.id}">View Details</button>
+                    </div>
+                `;
+                
+                resultsList.appendChild(resultCard);
+            });
+            
+            // Load subjects for filter
+            const subjects = API.getAllSubjects();
+            const subjectFilter = document.getElementById('result-subject-filter');
+            
+            subjectFilter.innerHTML = '<option value="">All Subjects</option>';
+            
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                option.textContent = subject.name;
+                subjectFilter.appendChild(option);
+            });
+            
+            // Add event listeners to view result buttons
+            document.querySelectorAll('.view-result-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const resultId = parseInt(button.getAttribute('data-id'));
+                    viewResultDetails(resultId);
+                });
+            });
+        }
+        
+        // Filter results
+        document.getElementById('apply-result-filters').addEventListener('click', () => {
+            const subjectId = parseInt(document.getElementById('result-subject-filter').value) || null;
+            const statusFilter = document.getElementById('result-status-filter').value;
+            
+            filterResults(subjectId, statusFilter);
+        });
+        
+        function filterResults(subjectId, statusFilter) {
+            let results = API.getAllResults();
+            
+            if (subjectId) {
+                results = results.filter(result => result.subjectId === subjectId);
+            }
+            
+            if (statusFilter === 'passed') {
+                results = results.filter(result => result.passed);
+            } else if (statusFilter === 'failed') {
+                results = results.filter(result => !result.passed);
+            }
+            
+            const resultsList = document.getElementById('results-list');
+            resultsList.innerHTML = '';
+            
+            if (results.length === 0) {
+                resultsList.innerHTML = '<p>No results found matching your filters.</p>';
+                return;
+            }
+            
+            // Sort results by date (most recent first)
+            results.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            results.forEach(result => {
+                const resultCard = document.createElement('div');
+                resultCard.className = 'result-card';
+                resultCard.innerHTML = `
+                    <div class="result-title">${result.testTitle}</div>
+                    <div class="result-info">Subject: ${result.subjectName}</div>
+                    <div class="result-info">Date: ${new Date(result.date).toLocaleString()}</div>
+                    <div class="result-info">Score: ${result.score}/${result.totalQuestions} (${result.percentage}%)</div>
+                    <div class="result-status ${result.passed ? 'passed' : 'failed'}">${result.passed ? 'PASSED' : 'FAILED'}</div>
+                    <div class="question-actions">
+                        <button class="btn-small view-result-btn" data-id="${result.id}">View Details</button>
+                    </div>
+                `;
+                
+                resultsList.appendChild(resultCard);
+            });
+            
+            // Add event listeners to view result buttons
+            document.querySelectorAll('.view-result-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const resultId = parseInt(button.getAttribute('data-id'));
+                    viewResultDetails(resultId);
+                });
+            });
+        }
+        
+        // View result details
+        function viewResultDetails(resultId) {
+            const result = API.getResultById(resultId);
+            
+            if (!result) {
+                alert('Result not found');
+                return;
+            }
+            
+            // Hide results list
+            document.getElementById('results-list-container').style.display = 'none';
+            
+            // Show result details
+            document.getElementById('result-details').style.display = 'block';
+            
+            // Set result info
+            document.getElementById('detail-test-title').textContent = result.testTitle;
+            document.getElementById('detail-subject').textContent = `Subject: ${result.subjectName}`;
+            document.getElementById('detail-date').textContent = `Date: ${new Date(result.date).toLocaleString()}`;
+            document.getElementById('detail-score').textContent = `Score: ${result.score}/${result.totalQuestions} (${result.percentage}%)`;
+            document.getElementById('detail-status').textContent = result.passed ? 'PASSED' : 'FAILED';
+            document.getElementById('detail-status').className = result.passed ? 'status passed' : 'status failed';
+            
+            // Display answers
+            const answersContainer = document.getElementById('detail-answers');
+            answersContainer.innerHTML = '';
+            
+            result.answers.forEach((answer, index) => {
+                const answerCard = document.createElement('div');
+                answerCard.className = `answer-card ${answer.isCorrect ? 'correct' : 'incorrect'}`;
+                
+                answerCard.innerHTML = `
+                    <div class="question-text">${index + 1}. ${answer.questionText}</div>
+                    <div class="answer-info">Your answer: ${answer.userAnswer ? answer.userAnswer.toUpperCase() : 'No answer'}</div>
+                    <div class="answer-info">Correct answer: ${answer.correctAnswer.toUpperCase()}</div>
+                    <div class="explanation">${answer.explanation || 'No explanation available'}</div>
+                `;
+                
+                answersContainer.appendChild(answerCard);
+            });
+            
+            // Add event listener to back button
+            document.getElementById('back-to-results-btn').addEventListener('click', () => {
+                // Hide result details
+                document.getElementById('result-details').style.display = 'none';
+                
+                // Show results list
+                document.getElementById('results-list-container').style.display = 'block';
+            });
+        }
+        
+        // Load analytics
+        function loadAnalytics() {
+            const results = API.getAllResults();
+            const subjects = API.getAllSubjects();
+            
+            if (results.length === 0) {
+                document.getElementById('analytics-container').innerHTML = '<p>No data available for analytics. Take some tests to see your performance.</p>';
+                return;
+            }
+            
+            // Overall performance
+            const totalTests = results.length;
+            const passedTests = results.filter(result => result.passed).length;
+            const passRate = (passedTests / totalTests * 100).toFixed(2);
+            
+            // Calculate average score
+            let totalPercentage = 0;
+            results.forEach(result => {
+                totalPercentage += parseFloat(result.percentage);
+            });
+            const averageScore = (totalPercentage / totalTests).toFixed(2);
+            
+            // Display overall performance
+            document.getElementById('overall-performance').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-title">Tests Taken</div>
+                    <div class="stat-value">${totalTests}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Pass Rate</div>
+                    <div class="stat-value">${passRate}%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Average Score</div>
+                    <div class="stat-value">${averageScore}%</div>
+                </div>
+            `;
+            
+            // Performance by subject
+            const subjectPerformance = [];
+            
+            subjects.forEach(subject => {
+                const subjectResults = results.filter(result => result.subjectId === subject.id);
+                
+                if (subjectResults.length > 0) {
+                    const subjectTotalTests = subjectResults.length;
+                    const subjectPassedTests = subjectResults.filter(result => result.passed).length;
+                    const subjectPassRate = (subjectPassedTests / subjectTotalTests * 100).toFixed(2);
+                    
+                    let subjectTotalPercentage = 0;
+                    subjectResults.forEach(result => {
+                        subjectTotalPercentage += parseFloat(result.percentage);
+                    });
+                    const subjectAverageScore = (subjectTotalPercentage / subjectTotalTests).toFixed(2);
+                    
+                    subjectPerformance.push({
+                        subject: subject.name,
+                        tests: subjectTotalTests,
+                        passRate: subjectPassRate,
+                        averageScore: subjectAverageScore
+                    });
+                }
+            });
+            
+            const subjectPerformanceContainer = document.getElementById('subject-performance');
+            subjectPerformanceContainer.innerHTML = '';
+            
+            if (subjectPerformance.length === 0) {
+                subjectPerformanceContainer.innerHTML = '<p>No subject data available for analytics.</p>';
+                return;
+            }
+            
+            // Create subject performance table
+            const table = document.createElement('table');
+            table.className = 'performance-table';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Tests Taken</th>
+                        <th>Pass Rate</th>
+                        <th>Average Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${subjectPerformance.map(perf => `
+                        <tr>
+                            <td>${perf.subject}</td>
+                            <td>${perf.tests}</td>
+                            <td>${perf.passRate}%</td>
+                            <td>${perf.averageScore}%</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            
+            subjectPerformanceContainer.appendChild(table);
+            
+            // Recent performance trend
+            // Sort results by date (oldest first)
+            const sortedResults = [...results].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Get last 5 results
+            const recentResults = sortedResults.slice(-5);
+            
+            const recentPerformanceContainer = document.getElementById('recent-performance');
+            recentPerformanceContainer.innerHTML = '';
+            
+            if (recentResults.length === 0) {
+                recentPerformanceContainer.innerHTML = '<p>No recent performance data available.</p>';
+                return;
+            }
+            
+            const recentTable = document.createElement('table');
+            recentTable.className = 'performance-table';
+            recentTable.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Test</th>
+                        <th>Subject</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${recentResults.map(result => `
+                        <tr>
+                            <td>${new Date(result.date).toLocaleDateString()}</td>
+                            <td>${result.testTitle}</td>
+                            <td>${result.subjectName}</td>
+                            <td>${result.percentage}%</td>
+                            <td class="${result.passed ? 'passed' : 'failed'}">${result.passed ? 'PASSED' : 'FAILED'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            
+            recentPerformanceContainer.appendChild(recentTable);
+        }
+        
+        // Update home stats
+        function updateHomeStats() {
+            const subjects = API.getAllSubjects();
+            const tests = API.getAllTests();
+            const results = API.getAllResults();
+            
+            document.getElementById('subject-count').textContent = subjects.length;
+            document.getElementById('test-count').textContent = tests.length;
+            document.getElementById('test-taken-count').textContent = results.length;
+            
+            // Calculate pass rate
+            const passedTests = results.filter(result => result.passed).length;
+            const passRate = results.length > 0 ? (passedTests / results.length * 100).toFixed(2) : 0;
+            document.getElementById('pass-rate').textContent = `${passRate}%`;
+            
+            // Recent activity
+            const recentActivity = document.getElementById('recent-activity');
+            recentActivity.innerHTML = '';
+            
+            // Sort results by date (most recent first)
+            const sortedResults = [...results].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Get last 5 results
+            const recentResults = sortedResults.slice(0, 5);
+            
+            if (recentResults.length === 0) {
+                recentActivity.innerHTML = '<div class="activity-item">No recent activity</div>';
+                return;
+            }
+            
+            recentResults.forEach(result => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+                activityItem.innerHTML = `
+                    <div class="activity-date">${new Date(result.date).toLocaleDateString()}</div>
+                    <div class="activity-info">
+                        <div class="activity-title">Completed ${result.testTitle}</div>
+                        <div class="activity-subject">Subject: ${result.subjectName}</div>
+                        <div class="activity-score">Score: ${result.percentage}%</div>
+                        <div class="result-status ${result.passed ? 'passed' : 'failed'}">${result.passed ? 'PASSED' : 'FAILED'}</div>
+                    </div>
+                `;
+                
+                recentActivity.appendChild(activityItem);
+            });
+        }
+        
+        // Initialize app on load
+        updateHomeStats();
+    </script>
+</body>
+</html>

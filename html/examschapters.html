@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Timer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        .card-transition {
+            transition: all 0.3s ease;
+        }
+        
+        .card-transition:hover {
+            transform: translateY(-2px);
+        }
+        
+        .timer-display {
+            font-family: monospace;
+            font-size: 3.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-ring {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .floating-card {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .chapter-accordion {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .chapter-accordion.open {
+            max-height: 500px;
+        }
+        
+        .gradient-button {
+            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+        }
+        
+        .gradient-button:hover {
+            background: linear-gradient(135deg, #4338ca, #2563eb);
+        }
+
+        .custom-input {
+            background: #F1F5F9;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-input:focus {
+            background: white;
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+        }
+        
+        .delete-btn {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .chapter-card:hover .delete-btn,
+        .topic-card:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .progress-container {
+            height: 18px;
+            background-color: #e5e7eb;
+            border-radius: 9px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 9px;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="sticky top-0 z-50 gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="ri-focus-3-line text-3xl"></i>
+                <span class="text-2xl font-bold">FocusUP</span>
+            </div>
+            <nav class="flex items-center space-x-4">
+                <a href="subjects.html" class="flex items-center space-x-2 bg-white bg-opacity-20 px-4 py-2 rounded-full hover:bg-opacity-30 transition">
+                    <i class="ri-home-4-line"></i>
+                    <span>Back to Subjects</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-indigo-900 mb-2" id="subjectTitle">Loading...</h1>
+            <p class="text-gray-600" id="subjectDescription"></p>
+        </div>
+        
+        <!-- Stats Card -->
+        <div class="max-w-3xl mx-auto mb-8 bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-semibold text-indigo-800 mb-4">Study Progress</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <div class="text-indigo-600 font-medium">Total Study Time</div>
+                    <div class="text-2xl font-bold mt-1" id="totalStudyTime">00:00:00</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="text-green-600 font-medium">Current Streak</div>
+                    <div class="text-2xl font-bold mt-1"><span id="currentStreak">0</span> days</div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <div class="text-purple-600 font-medium">Completion Rate</div>
+                    <div class="text-2xl font-bold mb-2"><span id="completionRate">0</span>%</div>
+                    <div class="progress-container">
+                        <div class="progress-bar bg-purple-500" id="completionBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter Management Section -->
+        <div class="max-w-3xl mx-auto mb-8 bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-indigo-800">Chapters</h2>
+                <div class="flex space-x-3">
+                    <button onclick="bulkOperation('markComplete')" class="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition flex items-center space-x-1">
+                        <i class="ri-check-double-line"></i>
+                        <span>Mark All Complete</span>
+                    </button>
+                    <button onclick="openAddChapterModal()" class="gradient-button text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i class="ri-add-line"></i>
+                        <span>Add Chapter</span>
+                    </button>
+                </div>
+            </div>
+            <div id="chaptersList" class="space-y-4">
+                <!-- Chapters will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Timer Section -->
+        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <div class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium" id="currentChapterTag">
+                    Not studying
+                </div>
+            </div>
+            <div class="timer-display mb-8" id="timer">00:00:00</div>
+            <div class="flex justify-center space-x-4">
+                <button id="startBtn" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition flex items-center space-x-2">
+                    <i class="ri-play-line"></i>
+                    <span>Start</span>
+                </button>
+                <button id="pauseBtn" class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition flex items-center space-x-2" disabled>
+                    <i class="ri-pause-line"></i>
+                    <span>Pause</span>
+                </button>
+                <button id="stopBtn" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition flex items-center space-x-2" disabled>
+                    <i class="ri-stop-line"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Chapter Modal -->
+    <div id="addChapterModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4 text-indigo-800">Add New Chapter</h3>
+            <form id="addChapterForm" onsubmit="addNewChapter(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="chapterName">
+                        Chapter Name
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="chapterName" 
+                           type="text" 
+                           required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="chapterDescription">
+                        Description (optional)
+                    </label>
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                              id="chapterDescription" 
+                              rows="3"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" 
+                            onclick="closeAddChapterModal()" 
+                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="gradient-button text-white px-4 py-2 rounded hover:opacity-90 transition">
+                        Add Chapter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Topic Modal -->
+    <div id="addTopicModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4 text-indigo-800">Add New Topic</h3>
+            <form id="addTopicForm" onsubmit="addNewTopic(event)">
+                <input type="hidden" id="parentChapterIndex">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="topicName">
+                        Topic Name
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                           id="topicName" 
+                           type="text" 
+                           required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="topicDescription">
+                        Description (optional)
+                    </label>
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                              id="topicDescription" 
+                              rows="2"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" 
+                            onclick="closeAddTopicModal()" 
+                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="gradient-button text-white px-4 py-2 rounded hover:opacity-90 transition">
+                        Add Topic
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4 text-red-600">Confirm Deletion</h3>
+            <p id="confirmationMessage" class="mb-6 text-gray-700">Are you sure you want to delete this item?</p>
+            <div class="flex justify-end space-x-4">
+                <button onclick="closeConfirmationModal()" 
+                        class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">
+                    Cancel
+                </button>
+                <button id="confirmDeleteBtn"
+                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast bg-indigo-600">
+        <span id="toastMessage">Action completed successfully!</span>
+    </div>
+
+    <script>
+        // Global variables for confirmation modal
+        let deleteItemType = null;
+        let deleteChapterIndex = null;
+        let deleteTopicIndex = null;
+        
+        // Daily progress data
+        let dailyProgressData = {
+            totalTime: 0,
+            lastSession: null,
+            sessions: {},
+            streakData: {
+                currentStreak: 0,
+                bestStreak: 0,
+                lastStudyDate: null
+            }
+        };
+
+        function loadDailyProgress() {
+            const progressKey = `studyProgress_${subject}`;
+            const savedProgress = localStorage.getItem(progressKey);
+            if (savedProgress) {
+                dailyProgressData = JSON.parse(savedProgress);
+            }
+            updateProgressDisplay();
+        }
+
+        function saveDailyProgress() {
+            const progressKey = `studyProgress_${subject}`;
+            localStorage.setItem(progressKey, JSON.stringify(dailyProgressData));
+            updateProgressDisplay();
+        }
+
+        function updateProgressDisplay() {
+            // Update total study time
+            document.getElementById('totalStudyTime').textContent = formatTime(dailyProgressData.totalTime);
+            
+            // Update streak
+            document.getElementById('currentStreak').textContent = dailyProgressData.streakData.currentStreak;
+            
+            // Update completion rate
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            let totalItems = chapters.length;
+            let completedItems = 0;
+            
+            // Count chapters and topics
+            chapters.forEach(chapter => {
+                if (chapter.completed) completedItems++;
+                
+                if (chapter.topics && chapter.topics.length > 0) {
+                    totalItems += chapter.topics.length;
+                    chapter.topics.forEach(topic => {
+                        if (topic.completed) completedItems++;
+                    });
+                }
+            });
+            
+            const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+            document.getElementById('completionRate').textContent = completionRate;
+            document.getElementById('completionBar').style.width = `${completionRate}%`;
+        }
+
+        function updateDailyProgress(duration) {
+            const today = new Date().toLocaleDateString();
+            
+            // Update total time
+            dailyProgressData.totalTime += duration;
+            dailyProgressData.lastSession = new Date().toISOString();
+            
+            // Update daily sessions
+            if (!dailyProgressData.sessions[today]) {
+                dailyProgressData.sessions[today] = 0;
+            }
+            dailyProgressData.sessions[today] += duration;
+            
+            // Update streak
+            const lastDate = dailyProgressData.streakData.lastStudyDate ? 
+                new Date(dailyProgressData.streakData.lastStudyDate) : null;
+            
+            if (!lastDate) {
+                dailyProgressData.streakData.currentStreak = 1;
+            } else {
+                const diffTime = Math.abs(new Date() - lastDate);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays <= 1) {
+                    dailyProgressData.streakData.currentStreak++;
+                } else {
+                    dailyProgressData.streakData.currentStreak = 1;
+                }
+            }
+            
+            if (dailyProgressData.streakData.currentStreak > dailyProgressData.streakData.bestStreak) {
+                dailyProgressData.streakData.bestStreak = dailyProgressData.streakData.currentStreak;
+            }
+            
+            dailyProgressData.streakData.lastStudyDate = new Date().toISOString();
+            saveDailyProgress();
+        }
+
+        // Get subject from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const subject = urlParams.get('subject');
+        const chaptersList = document.getElementById('chaptersList');
+        const currentChapterTag = document.getElementById('currentChapterTag');
+        
+        // Update title
+        document.getElementById('subjectTitle').textContent = subject || 'Study Timer';
+        
+        // Timer functionality
+        let timer;
+        let isRunning = false;
+        let seconds = 0;
+        let currentChapter = null;
+        let currentTopic = null;
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        // Initialize chapters in localStorage if not exists
+        if (!localStorage.getItem(`${subject}_chapters`)) {
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify([]));
+        }
+
+        function formatTime(totalSeconds) {
+            if (!totalSeconds && totalSeconds !== 0) return '00:00:00';
+            
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timer = setInterval(() => {
+                    seconds++;
+                    timerDisplay.textContent = formatTime(seconds);
+                }, 1000);
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                stopBtn.disabled = false;
+            }
+        }
+
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timer);
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+            }
+        }
+
+        function stopTimer() {
+            if (currentChapter !== null) {
+                saveStudyTime();
+            }
+            
+            isRunning = false;
+            clearInterval(timer);
+            seconds = 0;
+            timerDisplay.textContent = formatTime(seconds);
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stopBtn.disabled = true;
+            
+            // Reset current study session
+            currentChapter = null;
+            currentTopic = null;
+            updateCurrentChapterTag();
+        }
+
+        function saveStudyTime() {
+            if (currentChapter === null) return;
+            
+            // Load the latest data from both storage systems
+            loadDailyProgress();
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            // Update daily progress
+            updateDailyProgress(seconds);
+            
+            // Update chapter/topic time
+            if (currentTopic === null) {
+                // Add time to chapter
+                if (!chapters[currentChapter].timeSpent) {
+                    chapters[currentChapter].timeSpent = 0;
+                }
+                chapters[currentChapter].timeSpent += seconds;
+            } else {
+                // Add time to topic
+                if (!chapters[currentChapter].topics[currentTopic].timeSpent) {
+                    chapters[currentChapter].topics[currentTopic].timeSpent = 0;
+                }
+                chapters[currentChapter].topics[currentTopic].timeSpent += seconds;
+            }
+            
+            // Save updated chapters data
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            
+            // Refresh displays
+            refreshChaptersList();
+            
+            showToast("Study time saved successfully!");
+        }
+
+        function openAddChapterModal() {
+            document.getElementById('addChapterModal').classList.remove('hidden');
+        }
+
+        function closeAddChapterModal() {
+            document.getElementById('addChapterModal').classList.add('hidden');
+            document.getElementById('addChapterForm').reset();
+        }
+
+        function openAddTopicModal(chapterIndex) {
+            document.getElementById('parentChapterIndex').value = chapterIndex;
+            document.getElementById('addTopicModal').classList.remove('hidden');
+        }
+
+        function closeAddTopicModal() {
+            document.getElementById('addTopicModal').classList.add('hidden');
+            document.getElementById('addTopicForm').reset();
+        }
+        
+        function openConfirmationModal(type, chapterIdx, topicIdx) {
+            deleteItemType = type;
+            deleteChapterIndex = chapterIdx;
+            deleteTopicIndex = topicIdx;
+            
+            // Set confirmation message
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            let message = "";
+            
+            if (type === 'chapter') {
+                const chapter = chapters[chapterIdx];
+                const hasTopics = chapter.topics && chapter.topics.length > 0;
+                message = `Are you sure you want to delete "${chapter.name}"?`;
+                if (hasTopics) {
+                    message += ` This will also delete ${chapter.topics.length} topic${chapter.topics.length > 1 ? 's' : ''}.`;
+                }
+            } else {
+                const topic = chapters[chapterIdx].topics[topicIdx];
+                message = `Are you sure you want to delete the topic "${topic.name}"?`;
+            }
+            
+            document.getElementById('confirmationMessage').textContent = message;
+            document.getElementById('confirmationModal').classList.remove('hidden');
+        }
+        
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').classList.add('hidden');
+        }
+        
+        function confirmDelete() {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            if (deleteItemType === 'chapter') {
+                chapters.splice(deleteChapterIndex, 1);
+                showToast("Chapter deleted successfully!");
+            } else {
+                chapters[deleteChapterIndex].topics.splice(deleteTopicIndex, 1);
+                showToast("Topic deleted successfully!");
+            }
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+            closeConfirmationModal();
+            
+            // Update progress stats
+            updateProgressDisplay();
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function addNewChapter(event) {
+            event.preventDefault();
+            
+            const chapterName = document.getElementById('chapterName').value;
+            const chapterDescription = document.getElementById('chapterDescription').value;
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            chapters.push({
+                name: chapterName,
+                description: chapterDescription,
+                timeSpent: 0,
+                completed: false,
+                topics: []
+            });
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+            closeAddChapterModal();
+            
+            showToast("New chapter added successfully!");
+            updateProgressDisplay();
+        }
+
+        function addNewTopic(event) {
+            event.preventDefault();
+            
+            const chapterIndex = document.getElementById('parentChapterIndex').value;
+            const topicName = document.getElementById('topicName').value;
+            const topicDescription = document.getElementById('topicDescription').value;
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            // Initialize topics array if doesn't exist
+            if (!chapters[chapterIndex].topics) {
+                chapters[chapterIndex].topics = [];
+            }
+            
+            chapters[chapterIndex].topics.push({
+                name: topicName,
+                description: topicDescription,
+                timeSpent: 0,
+                completed: false
+            });
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+            closeAddTopicModal();
+            
+            showToast("New topic added successfully!");
+            updateProgressDisplay();
+        }
+
+        function toggleChapterAccordion(chapterIndex) {
+            const accordionElement = document.getElementById(`topics-${chapterIndex}`);
+            accordionElement.classList.toggle('open');
+            
+            const iconElement = document.getElementById(`accordion-icon-${chapterIndex}`);
+            if (accordionElement.classList.contains('open')) {
+                iconElement.classList.replace('ri-arrow-right-s-line', 'ri-arrow-down-s-line');
+            } else {
+                iconElement.classList.replace('ri-arrow-down-s-line', 'ri-arrow-right-s-line');
+            }
+        }
+        
+        function bulkOperation(action) {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            if (action === 'markComplete') {
+                chapters.forEach(chapter => {
+                    chapter.completed = true;
+                    if (chapter.topics && chapter.topics.length > 0) {
+                        chapter.topics.forEach(topic => {
+                            topic.completed = true;
+                        });
+                    }
+                });
+                
+                showToast("All items marked as complete!");
+            }
+            
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+            updateProgressDisplay();
+        }
+
+        function refreshChaptersList() {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            
+            chaptersList.innerHTML = chapters.map((chapter, chapterIndex) => {
+                const topicsHTML = chapter.topics && chapter.topics.length > 0 ? 
+                    `<div id="topics-${chapterIndex}" class="chapter-accordion pl-6 ml-3 border-l-2 border-indigo-100">
+                        ${chapter.topics.map((topic, topicIndex) => `
+                            <div class="topic-card bg-gray-50 rounded-lg p-4 mb-2 card-transition hover:shadow-md">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex-1">
+                                        <h4 class="text-md font-medium text-gray-700">${topic.name}</h4>
+                                        <p class="text-xs text-gray-500">${topic.description || 'No description'}</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-gray-500">Time: ${formatTime(topic.timeSpent || 0)}</span>
+                                        <button onclick="startTopicTimer(${chapterIndex}, ${topicIndex})" 
+                                                class="bg-indigo-500 text-white px-3 py-1 text-sm rounded hover:bg-indigo-600 transition">
+                                            Start Timer
+                                        </button>
+                                        <button onclick="toggleTopicComplete(${chapterIndex}, ${topicIndex})" 
+                                                class="text-${topic.completed ? 'green' : 'gray'}-500 hover:text-${topic.completed ? 'green' : 'gray'}-600">
+                                            <i class="ri-checkbox-circle-line text-lg"></i>
+                                        </button>
+                                        <button onclick="openConfirmationModal('topic', ${chapterIndex}, ${topicIndex})" 
+                                                class="delete-btn text-red-500 hover:text-red-600">
+                                            <i class="ri-delete-bin-line text-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>` : '';
+                
+                return `
+                    <div class="chapter-card bg-white rounded-lg p-5 shadow hover:shadow-md card-transition">
+                        <div class="flex justify-between items-center">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="toggleChapterAccordion(${chapterIndex})" class="text-indigo-600 hover:text-indigo-800">
+                                        <i id="accordion-icon-${chapterIndex}" class="${chapter.topics && chapter.topics.length > 0 ? 'ri-arrow-right-s-line' : 'ri-more-line'} text-xl"></i>
+                                    </button>
+                                    <h3 class="text-lg font-semibold text-gray-800">${chapter.name}</h3>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">${chapter.description || 'No description'}</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs text-gray-500">Time: ${formatTime(chapter.timeSpent || 0)}</span>
+                                <button onclick="openAddTopicModal(${chapterIndex})" 
+                                        class="bg-indigo-100 text-indigo-700 px-3 py-1 text-sm rounded hover:bg-indigo-200 transition">
+                                    Add Topic
+                                </button>
+                                <button onclick="startChapterTimer(${chapterIndex})" 
+                                        class="bg-indigo-500 text-white px-3 py-1 text-sm rounded hover:bg-indigo-600 transition">
+                                    Start Timer
+                                </button>
+                                <button onclick="toggleChapterComplete(${chapterIndex})" 
+                                        class="text-${chapter.completed ? 'green' : 'gray'}-500 hover:text-${chapter.completed ? 'green' : 'gray'}-600">
+                                    <i class="ri-checkbox-circle-line text-lg"></i>
+                                </button>
+                                <button onclick="openConfirmationModal('chapter', ${chapterIndex})" 
+                                        class="delete-btn text-red-500 hover:text-red-600">
+                                    <i class="ri-delete-bin-line text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                        ${topicsHTML}
+                    </div>
+                `;
+            }).join('');
+            
+            if (chapters.length === 0) {
+                chaptersList.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="ri-book-open-line text-5xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No chapters added yet. Click "Add Chapter" to get started.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function toggleChapterComplete(chapterIndex) {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            chapters[chapterIndex].completed = !chapters[chapterIndex].completed;
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+            updateProgressDisplay();
+        }
+
+        function toggleTopicComplete(chapterIndex, topicIndex) {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            chapters[chapterIndex].topics[topicIndex].completed = !chapters[chapterIndex].topics[topicIndex].completed;
+            localStorage.setItem(`${subject}_chapters`, JSON.stringify(chapters));
+            refreshChaptersList();
+            updateProgressDisplay();
+        }
+
+        function startChapterTimer(chapterIndex) {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            const chapter = chapters[chapterIndex];
+            
+            // Stop current timer if running
+            if (isRunning) {
+                stopTimer();
+            }
+            
+            // Set current session details
+            currentChapter = chapterIndex;
+            currentTopic = null;
+            updateCurrentChapterTag();
+            
+            // Reset and start timer
+            seconds = 0;
+            timerDisplay.textContent = formatTime(seconds);
+            startTimer();
+        }
+
+        function startTopicTimer(chapterIndex, topicIndex) {
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            const chapter = chapters[chapterIndex];
+            const topic = chapter.topics[topicIndex];
+            
+            // Stop current timer if running
+            if (isRunning) {
+                stopTimer();
+            }
+            
+            // Set current session details
+            currentChapter = chapterIndex;
+            currentTopic = topicIndex;
+            updateCurrentChapterTag();
+            
+            // Reset and start timer
+            seconds = 0;
+            timerDisplay.textContent = formatTime(seconds);
+            startTimer();
+        }
+
+        function updateCurrentChapterTag() {
+            if (currentChapter === null) {
+                currentChapterTag.textContent = 'Not studying';
+                return;
+            }
+            
+            const chapters = JSON.parse(localStorage.getItem(`${subject}_chapters`));
+            const chapter = chapters[currentChapter];
+            
+            if (currentTopic === null) {
+                currentChapterTag.textContent = `Studying: ${chapter.name}`;
+            } else {
+                const topic = chapter.topics[currentTopic];
+                currentChapterTag.textContent = `Studying: ${chapter.name} > ${topic.name}`;
+            }
+        }
+
+        // Event Listeners
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        
+        document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+
+        // Initialize
+        refreshChaptersList();
+        loadDailyProgress();
+        
+        // Load subject description
+        const subjectKey = `subject_${subject}`;
+        const subjectDetails = localStorage.getItem(subjectKey);
+        if (subjectDetails) {
+            const details = JSON.parse(subjectDetails);
+            document.getElementById('subjectDescription').textContent = details.description || '';
+        }
+    </script>
+</body>
+</html>
